@@ -1,0 +1,2 @@
+Using 8 cores to calculate positions.
+If you encounter memory errors, reduce num_cores and try it again or disable parallel

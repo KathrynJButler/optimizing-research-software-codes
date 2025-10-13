@@ -1,0 +1,16 @@
+georinex==1.16.1
+hatanaka==2.8.1
+importlib_resources==6.4.5
+ncompress==1.0.2
+numpy==1.24.4
+packaging==24.2
+pandas==2.0.3
+python-dateutil==2.9.0.post0
+pytz==2024.2
+PyYAML==6.0.2
+scipy==1.10.1
+six==1.16.0
+tzdata==2024.2
+unlzw3==0.2.2
+xarray==2023.1.0
+zipp==3.20.2

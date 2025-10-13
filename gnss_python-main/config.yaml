@@ -1,0 +1,39 @@
+rinex:
+  multiday:
+    enabled: false
+  singlefile:
+    observation:
+      - C:\Users\trantr3\gnss_python-main\Data\ALIC0910.19o
+    navigation:
+      - C:\Users\trantr3\gnss_python-main\Data\BRDC00IGS_R_20190910000_01D_MN.rnx
+  output_dir: C:\Users\trantr3\gnss_python-main\output
+  obs_size_threashold: 80
+constellations:
+  - G
+  - R
+  - E
+  - C
+station:
+  id: 'ALIC'
+  info: [-4052052.7072, 4212835.9827, -2545104.6244]
+etc:
+  disable_parallel: false
+  leap_second:
+    - 1981-06-30
+    - 1982-06-30
+    - 1983-06-30
+    - 1985-06-30
+    - 1987-12-31
+    - 1989-12-31
+    - 1990-12-31
+    - 1992-06-30
+    - 1993-06-30
+    - 1994-06-30
+    - 1995-12-31
+    - 1997-06-30
+    - 1998-12-31
+    - 2005-12-31
+    - 2008-12-31
+    - 2012-06-30
+    - 2015-06-30
+    - 2016-12-31
