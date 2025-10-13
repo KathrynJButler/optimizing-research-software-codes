@@ -8,9 +8,9 @@ The Optimizing Research Software Codes project aims to improve the performance o
 
 | Name | Role | Contact |
 |------|------|----------|
-| Kathryn Butler | Team member | butlekat@oregonstate.edu |
-| Michael Mcallister | Team member | mcallmic@oregonstate.edu |
-| Joseph Schaab | Team member | schaabj@oregonstate.edu |
+| Kathryn Butler | Team Member | butlekat@oregonstate.edu |
+| Michael Mcallister | Team Member | mcallmic@oregonstate.edu |
+| Joseph Schaab | Team Member | schaabj@oregonstate.edu |
 | [Dr. Jihye Park](https://engineering.oregonstate.edu/people/jihye-park) | Project Partner | Jihye.Park@oregonstate.edu |
 | Birat Thapa | TA | thapabi@oregonstate.edu |
 
