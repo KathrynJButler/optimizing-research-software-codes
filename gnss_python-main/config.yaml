@@ -1,12 +1,13 @@
 rinex:
-  multiday:
-    enabled: false
+  multiday: # options for multiday process
+    enabled: false # if true, it will read obs_location directory and try to process all data
   singlefile:
+    date: '2024-07-10'
     observation:
-      - C:\Users\trantr3\gnss_python-main\Data\ALIC0910.19o
+      - C:\Projects\gnss_python-main\Data\ALIC00AUS_R_20190910000_01D_30S_MO.19o
     navigation:
-      - C:\Users\trantr3\gnss_python-main\Data\BRDC00IGS_R_20190910000_01D_MN.rnx
-  output_dir: C:\Users\trantr3\gnss_python-main\output
+      - C:\Projects\gnss_python-main\Data\BRDC00IGS_R_20190910000_01D_MN.rnx
+  output_dir: C:\Projects\gnss_python-main\output\ALIC\compactdb
   obs_size_threashold: 80
 constellations:
   - G
