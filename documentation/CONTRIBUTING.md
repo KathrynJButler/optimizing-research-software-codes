@@ -74,8 +74,11 @@ Outline PR requirements (template, checklist, size limits), reviewer expectation
 - Required Status Checks: Check unit tests, Check linting and formatting, Check documentation.
 
 ## CI/CD
-Link to pipeline definitions, list mandatory jobs, how to view logs/re-run jobs,
-and what must pass before merge/release.
+- We currently have no pipeline definitions but plan on adding them in the future.
+- We are required to optimize the code to decrease runtime substantially.
+- Commits and branches will be visible on our Github repo and will allow the group to view each other’s changes.
+- The code must be run locally in the terminal and produce consistent and verifiably correct and improved code before merging to main.
+
 ## Security & Secrets
 We don’t expect that this project will handle sensitive data, but everyone contributing should follow good security practices to protect our code.
 
