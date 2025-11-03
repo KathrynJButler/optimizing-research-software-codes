@@ -4,7 +4,13 @@
 - Test: Write unit tests for new functionality to be submitted. All tests will be written in our program’s main testing file. Update pre-existing tests if necessary. Run tests locally and ensure all tests pass with no errors.
 - Code Review: Submit pull request with descriptive title and information. At least one team member must review. Reviewing team members are expected to be responsive and  provide constructive feedback.
 - Documentation: Summarize changes in the sprint document.
-- Final Checklist Before Merge: 1 - code runs correctly on local environment, 2 - outputs match the expected baseline, 3 - all tests pass with no errors, 4 - at least one team member has reviewed and approved the pull request, 5 - ensure code has no linting errors, 6 - document changes are summarized in sprint notes. 
+- Final Checklist Before Merge:
+  - code runs correctly on local environment.
+  - outputs match the expected baseline.
+  - all tests pass with no errors.
+  - at least one team member has reviewed and approved the pull request.
+  - ensure code has no linting errors.
+  - document changes are summarized in sprint notes.
 
 ## Code of Conduct
 All contributors are expected to follow Oregon State University’s student code of conduct as well as the CS Capstone course standards. 
@@ -18,6 +24,7 @@ All contributors are expected to follow Oregon State University’s student code
 - After installing all dependencies, either with or without Anaconda, the code should almost be ready to run.
 - Edit the yaml.config file to read the Navigation and Observation files you wish to use.
 - In the terminal of the directory /gnss_python-main/ enter ‘python rnx2db.py’ to run the program.
+
 ## Branching & Workflow
 - Workflow: We use trunk-based development workflow to manage our edits. This keeps our workflow quickly updated and continuously integrated.
 - Default Branch: The main branch holds all production-ready code. All added features and fixes are merged frequently. 
@@ -67,7 +74,6 @@ Reference issues using #<issue-number>. For example, #123.
 - All functionality that was present when we received the codebase is expected to remain when we’re finished, so testing will be required to maintain that level of coverage.
 
 ## Pull Requests & Reviews
-Outline PR requirements (template, checklist, size limits), reviewer expectations, approval rules, and required status checks.
 - Pull request requirements: Use standard pull request template .github/PULL_REQUEST_TEMPLATE.md to detail the changes that were made. See “Contributing Guide - Final Checklist Before Merge” as this is identical to our pull request checklist. Attempt to keep pull requests under 50 lines of code changed. Ideally, all changes are done within one function.
 - Reviewer Expectations: Provide feedback within 24 hours of when the request is submitted, check correctness and naming conventions, use comments to provide in-line notes.
 - Approval rules: One reviewer must approve request before merging, all testing and CI/CD checks must pass, there must be no merge conflicts.
