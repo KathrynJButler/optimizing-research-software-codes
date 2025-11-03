@@ -5,12 +5,12 @@
 - Code Review: Submit pull request with descriptive title and information. At least one team member must review. Reviewing team members are expected to be responsive and  provide constructive feedback.
 - Documentation: Summarize changes in the sprint document.
 - Final Checklist Before Merge:
-  - code runs correctly on local environment.
-  - outputs match the expected baseline.
-  - all tests pass with no errors.
-  - at least one team member has reviewed and approved the pull request.
-  - ensure code has no linting errors.
-  - document changes are summarized in sprint notes.
+  - Code runs correctly on local environment.
+  - Outputs match the expected baseline.
+  - All tests pass with no errors.
+  - At least one team member has reviewed and approved the pull request.
+  - Ensure code has no linting errors.
+  - Document changes are summarized in sprint notes.
 
 ## Code of Conduct
 All contributors are expected to follow Oregon State University’s student code of conduct as well as the CS Capstone course standards. 
