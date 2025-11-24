@@ -118,7 +118,12 @@ class Rinex(object):
       'linux': 'gfzrnx_2.1.9_lx64',
       'win32': 'gfzrnx_1.16-8204_win64.exe'
     }.get(sys.platform)
-    executable = os.path.join('gfzrnx', executable)
+    executable = os.path.join('C:\Projects\optimizing-research-software-codes\gnss_python-main\gfzrnx', executable)
+    if not os.path.exists(executable):
+      raise FileNotFoundError(
+          f"GFZRNX executable not found at {executable}. "
+          "Check that gfzrnx is installed and the path is correct."
+      )
     try:
       os.chmod(executable, 0o755)
     except:
