@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import georinex as gr
 
-from timer_func import timeit, print_timing_stats #TIME CHECKER!!!
+
 
 class Rinex(object):
   _leap_months = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366]
@@ -30,7 +30,7 @@ class Rinex(object):
     Satellite Position Class.
     Stores location (x, y, z), velocity (vx, vy, vz) and acceleration (ax, ay, az)
     """
-    @timeit #TIME CHECKER!!!
+    
     def __init__(self, x=0, y=0, z=0, vx=0, vy=0, vz=0, ax=0, ay=0, az=0):
       """
       Initialize SatPos object. Default value 0
@@ -46,7 +46,6 @@ class Rinex(object):
       self.az = az
 
     @classmethod
-    @timeit #TIME CHECKER!!!
     def copy(cls, other):
       """
       Copy SatPos object
@@ -55,7 +54,7 @@ class Rinex(object):
       """
       return cls(other.x, other.y, other.z, other.vx, other.vy, other.vz, other.ax, other.ay, other.az)
 
-  @timeit #TIME CHECKER!!!
+  
   def __init__(self, nav_files: List[str], obs_files: List[str], constellations: List[str]=None, output_dir: str=None, year: int=None, doy: int=None, hour_minute_index: str=None):
     """
     Initialize Rinex object
@@ -88,14 +87,14 @@ class Rinex(object):
     # Call parse
     #self.parse()
 
-  @timeit #TIME CHECKER!!!
+  
   def _preprocess_nav(self, nav):
     try:
       return gr.load(nav).to_dataframe()
     except:
       return self._nav_to_version_2(nav)
 
-  @timeit #TIME CHECKER!!!
+  
   def _preprocess_obs(self, obs):
     file_stat = os.stat(obs)
     if self.config['rinex'].get('obs_size_threashold', 64) < (file_stat.st_size / 1024 / 1024):
@@ -103,14 +102,14 @@ class Rinex(object):
         print('large obs version 3 file detected')
         self._obs_to_version_2(obs)
 
-  @timeit #TIME CHECKER!!!
+  
   def _get_obs_version(self, obs):
     with open(obs, 'r') as fp:
       first_line = fp.readline()
       version_string = first_line.strip().split(' ')[0]
       return int(version_string.split('.')[0]) # return major version
 
-  @timeit #TIME CHECKER!!!
+  
   def _obs_to_version_2(self, obs):
     print('obs version down to 2')
     import subprocess
@@ -125,7 +124,7 @@ class Rinex(object):
       pass
     subprocess.Popen([executable, '-finp', obs, '-fout', obs, '-f', '--version_out', '2', '-satsys', ''.join(self.constellations)]).wait()
 
-  @timeit #TIME CHECKER!!!
+  
   def _nav_to_version_2(self, nav):
     print('nav version down to 2')
     import subprocess
@@ -147,7 +146,7 @@ class Rinex(object):
         pass # skip if issue still occurs
     return pd.concat(tmp)
     
-  @timeit #TIME CHECKER!!!
+  
   def parse(self) -> pd.DataFrame:
     """
     Parse observation and navigation file and calculate position, azimuth, and elevation
@@ -231,7 +230,7 @@ class Rinex(object):
       fp.close()
     return pd.read_csv(output_file)
 
-  @timeit #TIME CHECKER!!!
+  
   def calculate_positions(self):
     try:
       if self.config['etc'].get('disable_parallel', False):
@@ -252,13 +251,13 @@ class Rinex(object):
       self.obs[['PosX', 'PosY', 'PosZ', 'ClkCorr']] = self.obs.apply(lambda x: self.get_satellite_position(x), axis=1,
                                                                      result_type='expand')
 
-  @timeit #TIME CHECKER!!!
+  
   def get_satellite_position_process_worker(self, sat_list):
     sat_list[['PosX', 'PosY', 'PosZ', 'ClkCorr']] = sat_list.apply(lambda x: self.get_satellite_position(x), axis=1,
                                                                    result_type='expand')
     return sat_list
 
-  @timeit #TIME CHECKER!!!
+  
   def get_additional_fields(self, sat) -> list:
     """
     return additional fields (freq_band, Signal Strength, Carrier Phase, Doppler, CA, P)
@@ -370,21 +369,21 @@ class Rinex(object):
         if band is not None:
           bands.append(band)
       return bands
-  @timeit #TIME CHECKER!!!
+  
   def has_freq_band(self, sat, prop=[]):
     for p in prop:
       if not np.isnan(getattr(sat, p, np.nan)):
         return True
     return False
 
-  @timeit #TIME CHECKER!!!
+  
   def get_first_field(self, sat, prop):
     for p in prop:
       if not np.isnan(getattr(sat, p, np.nan)):
         return getattr(sat, p)
     return 'None'
 
-  @timeit #TIME CHECKER!!!
+  
   def get_freq_band_rinex3(self, band, sat, prop):
     attrs = dir(sat)
     res = [band]
@@ -405,7 +404,7 @@ class Rinex(object):
       return res
     return None
 
-  @timeit #TIME CHECKER!!!
+  
   def get_first_c(self, el):
     if pd.notna(el.get('C1')):
       return el.C1
@@ -439,7 +438,7 @@ class Rinex(object):
       return el.C8
     return -1
 
-  @timeit #TIME CHECKER!!!
+  
   def get_first_p(self, el):
     if 'P2' not in el and 'C2W' not in el:
       return -1
@@ -450,13 +449,13 @@ class Rinex(object):
     else:
       return -1
 
-  @timeit #TIME CHECKER!!!
+  
   def get_satellite_position_partition(self, df):
     for i in df.itertuples():
       df[['PosX', 'PosY', 'PosZ', 'ClkCorr']] = self.get_satellite_position(i)
     return df
 
-  @timeit #TIME CHECKER!!!
+  
   def get_satellite_position(self, sat):
     try:
       if isinstance(sat.name[0], str):
@@ -474,7 +473,7 @@ class Rinex(object):
     except:
       return None, None, None, None
 
-  @timeit #TIME CHECKER!!!
+  
   def get_satellite_position_glonass(self, prn, t, observation):
     j2 = -1.0826257e-3
     omegae_dot = 7.292115e-5
@@ -570,7 +569,7 @@ class Rinex(object):
 
     return pos.x, pos.y, pos.z, clkcorr
 
-  @timeit #TIME CHECKER!!!
+  
   def glonass_diffeq(self, ell_a, gm, j2, omegae_dot, p0, p):
     p_dot = Rinex.SatPos()
     p_dot.x = p.vx
@@ -589,7 +588,7 @@ class Rinex(object):
 
     return p_dot
 
-  @timeit #TIME CHECKER!!!
+  
   def get_satellite_position_std(self, prn, t, observation):
     omgedo = 7292115.1467e-11
     c = 299792458
@@ -697,7 +696,7 @@ class Rinex(object):
 
     return pos_x, pos_y, pos_z, clkcorr
 
-  @timeit #TIME CHECKER!!!
+  
   def find_nearest_block(self, prn, t):
     try:
       nav = self.nav[self.nav.index.get_level_values('sv') == prn]
@@ -705,7 +704,7 @@ class Rinex(object):
     except:
       return None
 
-  @timeit #TIME CHECKER!!!
+  
   def to_mjd(self, d, prn='G'):
     year_diff = d.year - 1980
     num_leap = math.ceil(year_diff / 4)
@@ -723,7 +722,7 @@ class Rinex(object):
 
     return mjs
 
-  @timeit #TIME CHECKER!!!
+  
   def adjust_to_gps_time(self, mjs, d, prn):
     if prn.startswith('C'):
       mjs += 14
@@ -731,7 +730,7 @@ class Rinex(object):
       mjs += self.get_leap_second(d)
     return mjs
 
-  @timeit #TIME CHECKER!!!
+  
   def get_leap_second(self, d):
     total_leap = 0
     for l in self.config['etc']['leap_second']:
@@ -739,13 +738,12 @@ class Rinex(object):
         total_leap += 1
     return total_leap
 
-  @timeit #TIME CHECKER!!!
+  
   def to_mjd_with_week_second(self, week, t, d, prn):
     mjs = Rinex._gpst_0 + week * Rinex._sec_per_week + t
     return self.adjust_to_gps_time(mjs, d, prn)
 
   @classmethod
-  @timeit #TIME CHECKER!!!
   def load_config(cls, config='config.yaml'):
     if config is None:
       config = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.yaml')
@@ -787,7 +785,6 @@ class Rinex(object):
                  rinex_config['rinex']['output_dir'], year, doy, mid)
 
   @classmethod
-  @timeit #TIME CHECKER!!!
   def extract_datetime_information(cls, filename):
     filename = os.path.basename(filename) # extract filename from path
     regex_candidates = [re.compile('(?P<station>[A-Za-z0-9]{4})(?P<doy>[0-9]{3})0\.(?P<yy>[0-9]{2})[o|O]'),
@@ -822,7 +819,6 @@ class Rinex(object):
 
 
   @classmethod
-  @timeit #TIME CHECKER!!!
   def execute_realtime(cls, obs_format, hourly, minute, config=None):
     """ execute rinex realtime
     cls(nav_location, obs_location, constellations, output)
@@ -869,7 +865,6 @@ class Rinex(object):
                  rinex_config['rinex']['output_dir'], year, doy, mid)
 
   @classmethod
-  @timeit #TIME CHECKER!!!
   def output_file_name(cls, base_dir, station_id, yyyy, doy, hour_minute_index=None, postfix=None):
     csv_out_dir = os.path.join(base_dir, station_id, 'compactdb_csv')
     csv_out = f'{yyyy}-{doy}'
@@ -880,7 +875,6 @@ class Rinex(object):
     return os.path.join(csv_out_dir, csv_out + '.csv')
 
   @classmethod
-  @timeit #TIME CHECKER!!!
   def load_dir(cls, dir_path):
     if not os.path.isdir(dir_path):
       raise FileNotFoundError(f'{dir_path} not exists')
@@ -901,4 +895,4 @@ if __name__ == '__main__':
   if rx is not None:
     rx.parse()
   #rx = Rinex.load_dir('data')
-  print_timing_stats() #TIME CHECKER!!!
+
