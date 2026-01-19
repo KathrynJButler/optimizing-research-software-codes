@@ -26,8 +26,6 @@ Specifically, the inherited RINEX2DB Python program converts RINEX observation a
 | `doc/` | Project documentation (setup, usage, and background). |
 | `.gitignore` | Template Python `.gitignore` file. |
 | `README.md` | This file. |
-| `assignments.xlsx` | Assignment titles and due dates. |
-| `Welcome to the 2025–26 CS Capstone!.pdf` | Introductory project brief. |
 
 ---
 
