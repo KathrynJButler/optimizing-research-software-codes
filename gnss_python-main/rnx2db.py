@@ -706,7 +706,8 @@ class Rinex(object):
   def find_nearest_block(self, prn, t):
     try:
       nav = self.nav[self.nav.index.get_level_values('sv') == prn]
-      return nav.iloc[(nav['MJS'] - t).abs().argsort()[0]]
+      idx = (nav['MJS'] - t).abs().idxmin()
+      return nav.loc[idx]
     except:
       return None
 
