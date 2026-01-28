@@ -118,7 +118,7 @@ class Rinex(object):
       'linux': 'gfzrnx_2.1.9_lx64',
       'win32': 'gfzrnx_1.16-8204_win64.exe'
     }.get(sys.platform)
-    executable = os.path.join('C:\Projects\optimizing-research-software-codes\gnss_python-main\gfzrnx', executable)
+    executable = os.path.join('C:/Projects/optimizing-research-software-codes/gnss_python-main/gfzrnx', executable)
     if not os.path.exists(executable):
       raise FileNotFoundError(
           f"GFZRNX executable not found at {executable}. "
@@ -795,13 +795,13 @@ class Rinex(object):
   @timeit #TIME CHECKER!!!
   def extract_datetime_information(cls, filename):
     filename = os.path.basename(filename) # extract filename from path
-    regex_candidates = [re.compile('(?P<station>[A-Za-z0-9]{4})(?P<doy>[0-9]{3})0\.(?P<yy>[0-9]{2})[o|O]'),
-                        re.compile('(?P<station>[A-Za-z0-9]{4})(?P<doy>[0-9]{3})(?P<mid>[A-Za-z0-9]{3})\.(?P<yy>[0-9]{2})[o|O]'),
-                        re.compile('([A-Za-z0-9]{9})_._(?P<yyyy>[0-9]{4})(?P<doy>[0-9]{3})(?P<hh>[0-9]{2})(?P<mm>[0-9]{2})_([A-Za-z0-9]{3})_([A-Za-z0-9]{3})_([A-Za-z0-9]{2})\.rnx')]
+    regex_candidates = [re.compile('(?P<station>[A-Za-z0-9]{4})(?P<doy>[0-9]{3})0/.(?P<yy>[0-9]{2})[o|O]'),
+                        re.compile('(?P<station>[A-Za-z0-9]{4})(?P<doy>[0-9]{3})(?P<mid>[A-Za-z0-9]{3})/.(?P<yy>[0-9]{2})[o|O]'),
+                        re.compile('([A-Za-z0-9]{9})_._(?P<yyyy>[0-9]{4})(?P<doy>[0-9]{3})(?P<hh>[0-9]{2})(?P<mm>[0-9]{2})_([A-Za-z0-9]{3})_([A-Za-z0-9]{3})_([A-Za-z0-9]{2})/.rnx')]
     # return value => [yy, doy, mid|None]
     try:
       # check {SITE}{DOY}0.{YY}O format first
-      res = re.compile('(?P<station>[A-Za-z0-9]{4})(?P<doy>[0-9]{3})0\.(?P<yy>[0-9]{2})[o|O]').match(filename).groupdict()
+      res = re.compile('(?P<station>[A-Za-z0-9]{4})(?P<doy>[0-9]{3})0/.(?P<yy>[0-9]{2})[o|O]').match(filename).groupdict()
       if len(res) == 3:
         return res['yy'], res['doy'], None
     except:
@@ -809,7 +809,7 @@ class Rinex(object):
 
     try:
       # check {SITE}{DOY}{MID}.{YY}O format
-      res = re.compile('(?P<station>[A-Za-z0-9]{4})(?P<doy>[0-9]{3})(?P<mid>[A-Za-z0-9]{3})\.(?P<yy>[0-9]{2})[o|O]').match(filename).groupdict()
+      res = re.compile('(?P<station>[A-Za-z0-9]{4})(?P<doy>[0-9]{3})(?P<mid>[A-Za-z0-9]{3})/.(?P<yy>[0-9]{2})[o|O]').match(filename).groupdict()
       if len(res) == 4:
         return res['yy'], res['doy'], res['mid']
     except:
@@ -817,7 +817,7 @@ class Rinex(object):
 
     try:
       # check {SITE}{DOY}{MID}.{YY}O format
-      res = re.compile('([A-Za-z0-9]{9})_._(?P<yyyy>[0-9]{4})(?P<doy>[0-9]{3})(?P<hh>[0-9]{2})(?P<mm>[0-9]{2})_([A-Za-z0-9]{3})_([A-Za-z0-9]{3})_([A-Za-z0-9]{2})\.rnx').match(filename).groupdict()
+      res = re.compile('([A-Za-z0-9]{9})_._(?P<yyyy>[0-9]{4})(?P<doy>[0-9]{3})(?P<hh>[0-9]{2})(?P<mm>[0-9]{2})_([A-Za-z0-9]{3})_([A-Za-z0-9]{3})_([A-Za-z0-9]{2}).rnx').match(filename).groupdict()
       if len(res) == 4:
         return res['yyyy'][2:], res['doy'], None
     except:
