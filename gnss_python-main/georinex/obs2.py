@@ -36,7 +36,7 @@ def rinexobs2(
     if not use:
         use = {"C", "E", "G", "J", "R", "S"}
 
-    obs = xarray.Dataset({}, coords={"time": [], "sv": []})
+    obs = xarray.Dataset({}, coords={"time": np.array([], dtype='datetime64[us]'), "sv": []})
     attrs: dict[str, T.Any] = {}
     for u in use:
         o = rinexsystem2(
@@ -167,7 +167,7 @@ def rinexsystem2(
 
             if fast:
                 try:
-                    times[j] = time_epoch
+                    times[j] = np.datetime64(time_epoch)
                 except IndexError as e:
                     raise IndexError(
                         f'may be "fast" mode bug, try fast=False or "-strict" command-line option {e}'
@@ -331,7 +331,7 @@ def _num_times(
             f.seek(0, io.SEEK_SET)  # NEED THIS for io.StringIO input from user!
 
         Nt = ceil(filesize / 80 / (Nsvmin * Nextra))
-        times = np.empty(Nt, dtype=datetime)
+        times = np.empty(Nt, dtype='datetime64[us]')
     else:  # strict preallocation by double-reading file, OK for < 100 MB files
         t = obstime2(fn, verbose=verbose)  # < 10 ms for 24 hour 15 second cadence
         if tlim is not None:
