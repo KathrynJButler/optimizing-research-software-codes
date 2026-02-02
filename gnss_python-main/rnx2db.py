@@ -162,17 +162,27 @@ class Rinex(object):
     #self.obs = self.obs[
     #  (self.obs.C1.notna()) | (self.obs.C2.notna()) | (self.obs.C5.notna()) | (self.obs.C7.notna()) | (
     #    self.obs.C8.notna())]
+
+    #########
+    # Break #
+    #########
     tmp = []
     for c in self.constellations:
       tmp.append(self.obs[self.obs.index.get_level_values('sv').str.startswith(c)])
     self.obs = pd.concat(tmp)
     self.nav = self.nav[(self.nav.SVclockBias.notna())]
 
+    #########
+    # Break #
+    #########
     # Add additional fields
     for field in ['PosX', 'PosY', 'PosZ', 'ClkCorr', 'FreqBand', 'SignalStrength', 'CarrierPhase', 'Doppler', 'CA', 'P', 'MJS']:
       self.obs.insert(self.obs.shape[1], field, np.nan)
     self.nav.insert(self.nav.shape[1], 'MJS', -1)
 
+    #########
+    # Break #
+    #########
     # Add MJS Timestamp
     try:
       self.obs['MJS'] = self.obs.apply(lambda x: self.to_mjd(x.name[1]), axis=1)
@@ -192,21 +202,40 @@ class Rinex(object):
     # sort by time,satid and save to csv
     #self.obs.sort_values(['time', 'sv'])[['MJS', 'PosX', 'PosY', 'PosZ']].to_csv(os.path.join('data', 'compactdb.csv'))
 
+    #########
+    # Break #
+    #########
     # write parsed data to csv
     if self.output_dir is not None:
       output_file = os.path.join(self.output_dir, self.config['station']['id'], 'compactdb', f'{self.year}-{self.doy}')
+
+      #########
+      # Break #
+      #########
       if self.hour_minute_index is not None:
         output_file += f'-{self.hour_minute_index}'
       output_file += '.csv'
       os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
+    #########
+    # Break #
+    #########
     else:
       output_file = os.path.join(self.config['rinex']['output_dir'], self.config['station']['id'],
                                  'compactdb', f'{self.year}-{self.doy}')
+
+      #########
+      # Break #
+      #########
       if self.hour_minute_index is not None:
         output_file += f'-{self.hour_minute_index}'
       output_file += '.csv'
       os.makedirs(os.path.dirname(output_file), exist_ok=True)
     fp = open(output_file, 'w')
+
+    #########
+    # Break #
+    #########
     try:
       # write csv header
       fp.write(
@@ -214,6 +243,10 @@ class Rinex(object):
       self.obs = self.obs.sort_values(['time', 'sv'])
       # iterate items
       for item in self.obs.itertuples():
+
+        #########
+        # Break #
+        #########
         res = self.get_additional_fields(item)
         elevation, azimuth = compute.calculate_elevation_azimuth(np.array(self.config['station']['info']),
                                                                  np.array([item.PosX, item.PosY, item.PosZ]))
@@ -229,19 +262,35 @@ class Rinex(object):
           #r[4] = '' if np.isnan(r[4]) else r[4]  # ignore CA if it is NaN (to prevent nan string in csv file)
           fp.write(
             f'{item.Index[prn_index]},{item.Index[dt_index]},{item.MJS},{item.ClkCorr},{item.PosX},{item.PosY},{item.PosZ},{azimuth},{elevation},{r[0]},{r[1]},{r[2]},{r[3]},{r[4]},{r[5]}\n')
+
+    #########
+    # Break #
+    #########
     except:
       import traceback
       traceback.print_exc()
+
+    #########
+    # Break #
+    #########
     finally:
       fp.close()
     return pd.read_csv(output_file)
 
   @timeit #TIME CHECKER!!!
   def calculate_positions(self):
+
+    #########
+    # Break #
+    #########
     try:
       if self.config['etc'].get('disable_parallel', False):
         raise Exception('Throw exception to disable parallel')
       num_procs = self.config['etc'].get('num_cores', 0)
+
+      #########
+      # Break #
+      #########
       if num_procs == 0:
         num_procs = multiprocessing.cpu_count() // 2
       print(f'Using {num_procs} cores to calculate positions.\nIf you encounter memory errors, reduce num_cores and try it again or disable parallel')
@@ -250,6 +299,10 @@ class Rinex(object):
       with multiprocessing.Pool(processes=num_procs) as pool:
         res = pool.map(self.get_satellite_position_process_worker, obs_partition)
       self.obs = pd.concat(res)
+
+    #########
+    # Break #
+    #########
     except:
       import traceback
       traceback.print_exc()
