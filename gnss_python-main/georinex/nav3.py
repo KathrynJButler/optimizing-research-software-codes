@@ -134,7 +134,7 @@ def rinexnav3(
             if len(nav) == 0:
                 nav = xarray.Dataset(dsf, coords={"time": tu, "sv": [svv]})
             else:
-                nav = xarray.merge((nav, xarray.Dataset(dsf, coords={"time": tu, "sv": [svv]})), compat='override')
+                nav = xarray.merge((nav, xarray.Dataset(dsf, coords={"time": tu, "sv": [svv]})))
 
             sv_copies += 1
             check[np.arange(check.size)[check][iu]] = False
