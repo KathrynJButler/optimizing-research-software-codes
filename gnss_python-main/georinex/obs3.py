@@ -243,7 +243,7 @@ def _epoch(
         elif len(hdr["fields"]) == 1:  # one satellite system selected, faster to process
             data = xarray.concat((data, epoch_data), dim="time")
         else:  # general case, slower for different satellite systems all together
-            data = xarray.merge((data, epoch_data))
+            data = xarray.merge((data, epoch_data), compat='override')
 
     return data
 

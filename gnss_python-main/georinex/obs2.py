@@ -51,7 +51,7 @@ def rinexobs2(
         )
         if len(o.variables) > 0:
             attrs = o.attrs
-            obs = xarray.merge((obs, o))
+            obs = xarray.merge((obs, o), compat='override')
 
     obs.attrs = attrs
 
