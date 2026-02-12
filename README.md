@@ -1,7 +1,8 @@
 # Optimizing Research Software Codes Project
 
 The Optimizing Research Software Codes project aims to improve the performance of an existing research tool used for Global Navigation Satellite System (GNSS) data analysis.  
-Specifically, the inherited RINEX2DB Python program converts RINEX observation and navigation files into `.csv` outputs. Our goal is to reduce computation time while maintaining accuracy.
+
+Specifically, the inherited RINEX2DB Python program converts RINEX observation and navigation files into `.csv` outputs. Our goal is to reduce computation time by 60% while maintaining accuracy.
 
 ---
 
@@ -19,36 +20,36 @@ Specifically, the inherited RINEX2DB Python program converts RINEX observation a
 
 ## Repository Overview
 
-| Directory/File | Description |
+| Directory | Description |
 |----------------|-------------|
 | `datasets/COVL_1sec/` | Sample input datasets (observation and navigation files). |
 | `gnss_python-main/` | Main program folder containing `rnx2db.py` and supporting scripts. |
 | `doc/` | Project documentation (setup, usage, and background). |
-| `.gitignore` | Template Python `.gitignore` file. |
-| `README.md` | This file. |
+| `.gitignore` | Python `.gitignore` file. |
 
 ---
 
-## Coming Soon
-
-### Setup & Installation
-Instructions for downloading and running the project will be added after intiial testing is complete.
+## Setup & Installation
+Instructions for downloading and running the project will be added after testing is complete.
 
 ---
 
-### Execution & Testing
+## Execution & Testing
 Guidelines for executing performance benchmarks and validation tests will be included soon!
 
 ---
 
-### License
-License is **pending confirmation from our project partner**. Once finalized, the appropriate open-source or institutional license will be added here.
+## License
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.txt) for more details.
 
 ---
 
-### Version
+## Version
 **v0.1 (Setup Verified)** — Repository cloned, build confirmed, baseline runtime recorded.
+**v1.1 (First Runtime Optimization Complete)** — Removed unnecessary loop and improved the runtime of an average of 10%.
 
 ---
 
-© 2025 Optimizing Research Software Codes Team — *License pending partner confirmation.*
+© 2026 Optimizing Research Software Codes Team
