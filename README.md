@@ -10,10 +10,10 @@ Specifically, the inherited RINEX2DB Python program converts RINEX observation a
 
 | Name | Role | Contact |
 |------|------|----------|
+| [Dr. Jihye Park](https://engineering.oregonstate.edu/people/jihye-park) | Project Partner | Jihye.Park@oregonstate.edu |
 | Kathryn Butler | Team Member | butlekat@oregonstate.edu |
 | Michael McAllister | Team Member | mcallmic@oregonstate.edu |
 | Joseph Schaab | Team Member | schaabj@oregonstate.edu |
-| [Dr. Jihye Park](https://engineering.oregonstate.edu/people/jihye-park) | Project Partner | Jihye.Park@oregonstate.edu |
 | Birat Thapa | TA | thapabi@oregonstate.edu |
 
 ---
@@ -22,15 +22,18 @@ Specifically, the inherited RINEX2DB Python program converts RINEX observation a
 
 | Directory | Description |
 |----------------|-------------|
-| `datasets/COVL_1sec/` | Sample input datasets (observation and navigation files). |
+| `.github/workflows/` | Code analysis folder (currently disabled). |
+| `Datasets/COVL_1sec/` | Sample input datasets (observation and navigation files). |
+| `Testing/` | Testing functions and data go here (currently empty). |
+| `documetation/` | Architecture, contributing, and progress reports. |
 | `gnss_python-main/` | Main program folder containing `rnx2db.py` and supporting scripts. |
-| `doc/` | Project documentation (setup, usage, and background). |
-| `.gitignore` | Python `.gitignore` file. |
 
 ---
 
 ## Setup & Installation
-Instructions for downloading and running the project will be added after testing is complete.
+[Current Setup and Run Instructions](https://github.com/KathrynJButler/optimizing-research-software-codes/blob/main/documentation/How_to_Run.pdf)
+
+This process will be updated after further progress is made to reduce runtime.
 
 ---
 
@@ -48,6 +51,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 ## Version
 **v0.1 (Setup Verified)** — Repository cloned, build confirmed, baseline runtime recorded.
+
 **v1.1 (First Runtime Optimization Complete)** — Removed unnecessary loop and improved the runtime of an average of 10%.
 
 ---
