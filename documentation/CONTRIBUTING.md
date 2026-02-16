@@ -18,12 +18,19 @@ All contributors are expected to follow Oregon State University’s student code
 - Provide constructive feedback in reviews.
 - Report any concerns to the TA or instructor.
 
+## Prerequisites
+- Python 3.x
+- Anaconda (recommended)
+- pip
+- Git
+- Access to GNSS data files (Navigation & Observation)
+
 ## Getting Started
-- Anaconda is highly recommended as an environment handler to make setting up required libraries much easier.
-- Create your directory and add the four top-level folders from the Github repository.
-- After installing all dependencies, either with or without Anaconda, the code should almost be ready to run.
-- Edit the yaml.config file to read the Navigation and Observation files you wish to use.
-- In the terminal of the directory /gnss_python-main/ enter ‘python rnx2db.py’ to run the program.
+- Clone the repository: `git clone <repo-url>`
+- Navigate into the directory: `cd gnss_python-main`
+- Install dependencies (via Anaconda or pip).
+- Edit yaml.config to specify Navigation and Observation files.
+- Run: `python rnx2db.py`
 
 ## Branching & Workflow
 - Workflow: We use trunk-based development workflow to manage our edits. This keeps our workflow quickly updated and continuously integrated.
@@ -63,8 +70,8 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/
 Reference issues using #<issue-number>. For example, #123.
 
 ## Code Style, Linting & Formatting
-- We will be using Pylint as out linter
-- Use ’pip install pylint’ to install pylint
+- We will be using Pylint as our linter
+- Use `pip install pylint` to install pylint
 - To check for linting issues in our code, we will run whichever function we wish to check with pylint. 
 - For example, if we wanted to check the rnx2db.py file we would run ‘pylint rnx2db.py’ in the gnss_python-main directory.
 ## Testing
@@ -78,11 +85,12 @@ Reference issues using #<issue-number>. For example, #123.
 - Reviewer Expectations: Provide feedback within 24 hours of when the request is submitted, check correctness and naming conventions, use comments to provide in-line notes.
 - Approval rules: One reviewer must approve request before merging, all testing and CI/CD checks must pass, there must be no merge conflicts.
 - Required Status Checks: Check unit tests, Check linting and formatting, Check documentation.
+- All pull requests must meet the Definition of Done outlined in the Team Charter (Section 3).
 
 ## CI/CD
-- We currently have no pipeline definitions but plan on adding them in the future.
+- Currently, testing and linting are run locally prior to merge. Automated CI checks are planned for a future sprint.
 - We are required to optimize the code to decrease runtime substantially.
-- Commits and branches will be visible on our Github repo and will allow the group to view each other’s changes.
+- Commits and branches will be visible on our GitHub repo and will allow the group to view each other’s changes.
 - The code must be run locally in the terminal and produce consistent and verifiably correct and improved code before merging to main.
 
 ## Security & Secrets
