@@ -5,6 +5,9 @@ import re
 import sys
 import math
 
+# enable memory mapping
+#import mmap
+
 from typing import List
 
 import compute
@@ -16,6 +19,9 @@ import pandas as pd
 import georinex as gr
 
 from timer_func import timeit, print_timing_stats #Time checker
+
+# create memory mapping object
+# mmap.mmap(file_obj.fileno(), length=0, access=mmap.ACCESS_READ)
 
 class Rinex(object):
   _leap_months = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366]
