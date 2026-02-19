@@ -208,39 +208,58 @@ class Rinex(object):
         output_file += f'-{self.hour_minute_index}'
       output_file += '.csv'
       os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    fp = open(output_file, 'w')
 
-    try:
-      # write csv header
-      fp.write(
-        'SatID,Time,MJS,ClkCorr,PosX,PosY,PosZ,AziAngle,ElevAngle,FreqBand,SignalStrength,CarrierPhase,Doppler,CA,P\n')
-      self.obs = self.obs.sort_values(['time', 'sv'])
-      # iterate items
-      for item in self.obs.itertuples():
+    self.obs = self.obs.sort_values(['time', 'sv'])
 
-        res = self.get_additional_fields(item)
-        elevation, azimuth = compute.calculate_elevation_azimuth(np.array(self.config['station']['info']),
-                                                                 np.array([item.PosX, item.PosY, item.PosZ]))
-        if isinstance(item.Index[0], str):
-          prn_index = 0
-          dt_index = 1
-        else:
-          prn_index = 1
-          dt_index = 0
-        for r in res:
-          # Filter
-          #r[3] = '' if np.isnan(r[3]) or int(r[3]) < 0 else r[3]  # ignore doppler if it is NaN or negative
-          #r[4] = '' if np.isnan(r[4]) else r[4]  # ignore CA if it is NaN (to prevent nan string in csv file)
-          fp.write(
-            f'{item.Index[prn_index]},{item.Index[dt_index]},{item.MJS},{item.ClkCorr},{item.PosX},{item.PosY},{item.PosZ},{azimuth},{elevation},{r[0]},{r[1]},{r[2]},{r[3]},{r[4]},{r[5]}\n')
+    rows = []
+    recv = np.array(self.config['station']['info'])
 
-    except:
-      import traceback
-      traceback.print_exc()
+    for item in self.obs.itertuples():
 
-    finally:
-      fp.close()
-    return pd.read_csv(output_file)
+      res = self.get_additional_fields(item)
+
+      elevation, azimuth = compute.calculate_elevation_azimuth(
+          recv,
+          np.array([item.PosX, item.PosY, item.PosZ])
+      )
+
+      if isinstance(item.Index[0], str):
+        sat_id = item.Index[0]
+        dt = item.Index[1]
+      else:
+        sat_id = item.Index[1]
+        dt = item.Index[0]
+
+      for r in res:
+        rows.append([
+            sat_id,
+            dt,
+            item.MJS,
+            item.ClkCorr,
+            item.PosX,
+            item.PosY,
+            item.PosZ,
+            azimuth,
+            elevation,
+            r[0],
+            r[1],
+            r[2],
+            r[3],
+            r[4],
+            r[5]
+        ])
+
+    output_df = pd.DataFrame(rows, columns=[
+        'SatID', 'Time', 'MJS', 'ClkCorr',
+        'PosX', 'PosY', 'PosZ',
+        'AziAngle', 'ElevAngle',
+        'FreqBand', 'SignalStrength',
+        'CarrierPhase', 'Doppler', 'CA', 'P'
+    ])
+
+    output_df.to_csv(output_file, index=False)
+
+    return output_df
 
   @timeit #Time checker
   def calculate_positions(self):
