@@ -172,15 +172,9 @@ class Rinex(object):
       self.obs.insert(self.obs.shape[1], field, np.nan)
     self.nav.insert(self.nav.shape[1], 'MJS', -1)
 
-    # Add MJS Timestamp
-    try:
-      self.obs['MJS'] = self.obs.apply(lambda x: self.to_mjd(x.name[1]), axis=1)
-    except:
-      self.obs['MJS'] = self.obs.apply(lambda x: self.to_mjd(x.name[0]), axis=1)
-    try:
-      self.nav['MJS'] = self.nav.apply(lambda x: self.to_mjd(x.name[1], x.name[0]), axis=1)
-    except:
-      self.nav['MJS'] = self.nav.apply(lambda x: self.to_mjd(x.name[0], x.name[1]), axis=1)
+    # Add MJS Timestamp (vectorized)
+    self.add_mjd_column(self.obs)
+    self.add_mjd_column(self.nav)
 
     # Calculate satellite positions
     self.calculate_positions()
@@ -756,6 +750,65 @@ class Rinex(object):
       if d.date() > l:
         total_leap += 1
     return total_leap
+  
+  def add_mjd_column(self, df):
+    # Detect which index level is PRN vs datetime
+    lvl0 = df.index.get_level_values(0)
+
+    if isinstance(lvl0[0], str):
+        prn_index = 0
+        dt_index = 1
+    else:
+        prn_index = 1
+        dt_index = 0
+
+    prn_series = pd.Series(df.index.get_level_values(prn_index))
+    dt_series = pd.Series(pd.to_datetime(df.index.get_level_values(dt_index)))
+
+    # Vectorized base computation
+    year_diff = dt_series.dt.year - 1980
+    num_leap = np.ceil(year_diff / 4).astype(int)
+    is_leap = (dt_series.dt.year % 4 == 0)
+
+    gps_days = year_diff * 365 + num_leap + dt_series.dt.day - 6
+
+    leap_offsets = np.array(Rinex._leap_months)
+    normal_offsets = np.array(Rinex._normal_months)
+    month_index = dt_series.dt.month.values - 1
+
+    gps_days += np.where(
+        is_leap,
+        leap_offsets[month_index],
+        normal_offsets[month_index]
+    )
+
+    mjs = (
+        Rinex._gpst_0
+        + gps_days * Rinex._sec_per_day
+        + dt_series.dt.hour * 3600
+        + dt_series.dt.minute * 60
+        + dt_series.dt.second
+    )
+
+    # ---- GPS time adjustments ----
+
+    # Beidou
+    mask_c = prn_series.str.startswith('C')
+    mjs[mask_c] += 14
+
+    # GLONASS
+    mask_r = prn_series.str.startswith('R')
+    if mask_r.any():
+        leap_seconds = []
+        for d in dt_series[mask_r]:
+            total = 0
+            for l in self.config['etc']['leap_second']:
+                if d.date() > l:
+                    total += 1
+            leap_seconds.append(total)
+        mjs[mask_r] += leap_seconds
+
+    df['MJS'] = mjs.values
 
   def to_mjd_with_week_second(self, week, t, d, prn):
     mjs = Rinex._gpst_0 + week * Rinex._sec_per_week + t
