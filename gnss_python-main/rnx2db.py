@@ -23,6 +23,16 @@ from timer_func import timeit, print_timing_stats #Time checker
 # create memory mapping object
 # mmap.mmap(file_obj.fileno(), length=0, access=mmap.ACCESS_READ)
 
+# suppress warnings and log to file
+import warnings
+
+log_file = open("warning_log.txt", "w")
+
+def warning_handler(message, category, filename, lineno, file=None, line=None):
+    log_file.write(f"{filename}:{lineno}: {category.__name__}: {message}\n")
+
+warnings.showwarning = warning_handler
+
 class Rinex(object):
   _leap_months = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366]
   _normal_months = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365]
