@@ -10,6 +10,7 @@ pytz==2024.2
 PyYAML==6.0.2
 scipy==1.10.1
 six==1.16.0
+tqdm==4.67.3
 tzdata==2024.2
 unlzw3==0.2.2
 xarray==2023.1.0

@@ -42,9 +42,13 @@ logging.basicConfig(
     datefmt="%H:%M:%S"
 )
 
-
+# time tracking
 import time
 start = time.time()
+
+# progress bar
+from tqdm import tqdm
+
 
 class Rinex(object):
   _leap_months = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366]
@@ -231,7 +235,7 @@ class Rinex(object):
     rows = []
     recv = np.array(self.config['station']['info'])
 
-    for item in self.obs.itertuples():
+    for item in tqdm(self.obs.itertuples(), total=len(self.obs), desc="Building output rows"):
 
       res = self.get_additional_fields(item)
 
@@ -288,11 +292,19 @@ class Rinex(object):
       if num_procs == 0:
         num_procs = multiprocessing.cpu_count() // 2
       logging.info(f'Calculating positions using {num_procs} cores...')
-      obs_partition = np.array_split(self.obs, num_procs)
-      res = None
+      chunks = num_procs * 4
+      obs_partition = np.array_split(self.obs, chunks)
+      
       with multiprocessing.Pool(processes=num_procs) as pool:
-        res = pool.map(self.get_satellite_position_process_worker, obs_partition)
-      self.obs = pd.concat(res)
+        results = list(
+            tqdm(
+                pool.imap(self.get_satellite_position_process_worker, obs_partition),
+                total=len(obs_partition),
+                desc="Calculating satellite positions",
+            )
+        )
+
+      self.obs = pd.concat(results)
 
     except:
       import traceback
@@ -998,10 +1010,10 @@ def main():
     rx.parse()
   logging.info("Processing completed.")
   end = time.time()
-  logging.info(f"Total runtime: {end - start:.2f} seconds.")
+  logging.info(f"Total runtime: {end - start:.2f} seconds ({((end-start)/60):.0f} minutes).")
   logging.info("===================================")
   # rx = Rinex.load_dir('data')
-  print_timing_stats() #Time checker
+  # print_timing_stats() #Time checker
 
 
 if __name__ == '__main__':
