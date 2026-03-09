@@ -33,6 +33,19 @@ def warning_handler(message, category, filename, lineno, file=None, line=None):
 
 warnings.showwarning = warning_handler
 
+# configure logging
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(message)s",
+    datefmt="%H:%M:%S"
+)
+
+
+import time
+start = time.time()
+
 class Rinex(object):
   _leap_months = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366]
   _normal_months = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365]
@@ -111,7 +124,7 @@ class Rinex(object):
     file_stat = os.stat(obs)
     if self.config['rinex'].get('obs_size_threashold', 64) < (file_stat.st_size / 1024 / 1024):
       if self._get_obs_version(obs) == 3:
-        print('large obs version 3 file detected')
+        logging.info('Large obs version 3 file detected!')
         self._obs_to_version_2(obs)
 
   def _get_obs_version(self, obs):
@@ -121,7 +134,7 @@ class Rinex(object):
       return int(version_string.split('.')[0]) # return major version
 
   def _obs_to_version_2(self, obs):
-    print('obs version down to 2')
+    logging.info('Converting obs version down to 2...')
     import subprocess
     executable = {
       'linux': 'gfzrnx_2.1.9_lx64',
@@ -140,7 +153,7 @@ class Rinex(object):
     subprocess.Popen([executable, '-finp', obs, '-fout', obs, '-f', '--version_out', '2', '-satsys', ''.join(self.constellations)]).wait()
 
   def _nav_to_version_2(self, nav):
-    print('nav version down to 2')
+    logging.info('Converting nav version down to 2...')
     import subprocess
     executable = {
       'linux': 'gfzrnx_2.1.9_lx64',
@@ -274,7 +287,7 @@ class Rinex(object):
 
       if num_procs == 0:
         num_procs = multiprocessing.cpu_count() // 2
-      print(f'Using {num_procs} cores to calculate positions.\nIf you encounter memory errors, reduce num_cores and try it again or disable parallel')
+      logging.info(f'Calculating positions using {num_procs} cores...')
       obs_partition = np.array_split(self.obs, num_procs)
       res = None
       with multiprocessing.Pool(processes=num_procs) as pool:
@@ -827,7 +840,8 @@ class Rinex(object):
   @classmethod
   def load_config(cls, config='config.yaml'):
     # output that we're loading config
-    print('Loading config...')
+    logging.info("Loading config...")
+
     if config is None:
       config = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.yaml')
     config = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.yaml')  
@@ -972,13 +986,23 @@ class Rinex(object):
           obs_file = joined_path
     return cls(nav_file, obs_file)
 
+def main():
+  logging.info("===================================")
+  logging.info("GNSS RINEX Processing Started")
+  logging.info("===================================")
 
-if __name__ == '__main__':
   rx = Rinex.load_config()
   if rx is not None:
     # output that the processing has started
-    print('Processing started...')
-
+    logging.info("Processing RINEX files...")
     rx.parse()
+  logging.info("Processing completed.")
+  end = time.time()
+  logging.info(f"Total runtime: {end - start:.2f} seconds.")
+  logging.info("===================================")
   # rx = Rinex.load_dir('data')
   print_timing_stats() #Time checker
+
+
+if __name__ == '__main__':
+  main()
