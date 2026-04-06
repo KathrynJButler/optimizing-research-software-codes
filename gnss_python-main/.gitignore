@@ -1,4 +1,5 @@
 .idea
-data
 __pycache__
 output
+warning_log.txt
+Datasets

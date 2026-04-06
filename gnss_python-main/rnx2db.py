@@ -188,15 +188,19 @@ class Rinex(object):
     #  (self.obs.C1.notna()) | (self.obs.C2.notna()) | (self.obs.C5.notna()) | (self.obs.C7.notna()) | (
     #    self.obs.C8.notna())]
 
-    tmp = []
-    for c in self.constellations:
-      tmp.append(self.obs[self.obs.index.get_level_values('sv').str.startswith(c)])
-    self.obs = pd.concat(tmp)
+    sv_index = self.obs.index.get_level_values('sv')
+    mask = sv_index.str.startswith(tuple(self.constellations))
+    self.obs = self.obs[mask]
+
     self.nav = self.nav[(self.nav.SVclockBias.notna())]
 
     # Add additional fields
-    for field in ['PosX', 'PosY', 'PosZ', 'ClkCorr', 'FreqBand', 'SignalStrength', 'CarrierPhase', 'Doppler', 'CA', 'P', 'MJS']:
-      self.obs.insert(self.obs.shape[1], field, np.nan)
+    fields = ['PosX','PosY','PosZ','ClkCorr','FreqBand','SignalStrength',
+          'CarrierPhase','Doppler','CA','P','MJS']
+
+    for f in fields:
+        self.obs[f] = np.nan
+    
     self.nav.insert(self.nav.shape[1], 'MJS', -1)
 
     # Add MJS Timestamp (vectorized)
