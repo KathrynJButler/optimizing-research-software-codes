@@ -305,6 +305,7 @@ class Rinex(object):
                 pool.imap(self.get_satellite_position_process_worker, obs_partition),
                 total=len(obs_partition),
                 desc="Calculating satellite positions",
+                unit="partition"
             )
         )
 
