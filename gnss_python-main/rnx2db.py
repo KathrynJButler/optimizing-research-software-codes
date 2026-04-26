@@ -176,7 +176,48 @@ class Rinex(object):
       except:
         pass # skip if issue still occurs
     return pd.concat(tmp)
+
+
+  # not completed yet
+  def parse_streaming(self):
+    """
+    Parse observation and navigation file and calculate position, azimuth, and elevation
+    """
+    recv = np.array(self.config['station']['info'])
+    output_file = self._build_output_path()
     
+    # Get sorted unique time windows (floor to nearest hour)
+    times = pd.to_datetime(
+        self.obs.index.get_level_values('time')
+    ).floor('H').unique()
+    
+    first_chunk = True
+    
+    for t in tqdm(times, desc="Processing time windows"):
+        # Pull just this hour's obs
+        chunk = self.obs.xs(
+            slice(t, t + pd.Timedelta(hours=1)),
+            level='time', drop_level=False
+        )
+        
+        # Add MJS, compute positions for just this chunk
+        self.add_mjd_column(chunk)
+        chunk = self.calculate_positions_streaming(chunk)
+        chunk = chunk.dropna(subset=['PosX', 'PosY', 'PosZ'])
+        
+        # Build output rows for just this chunk
+        rows = self._build_output_rows(chunk, recv)
+        
+        out_df = pd.DataFrame(rows, columns=[...])
+        out_df.to_csv(
+            output_file,
+            mode='w' if first_chunk else 'a',
+            header=first_chunk,
+            index=False
+        )
+        first_chunk = False
+    
+
   @timeit #Time checker
   def parse(self) -> pd.DataFrame:
     """
