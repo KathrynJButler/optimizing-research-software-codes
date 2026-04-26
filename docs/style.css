@@ -1,9 +1,9 @@
 /* ─── Tokens ─────────────────────────────────────────── */
 :root {
-  --brand:       #4f46e5;   /* indigo — swap to match your project */
-  --brand-dark:  #3730a3;
+  --brand:       #3C668D;
+  --brand-dark:  #253253;
   --brand-light: #e0e7ff;
-  --text-main:   #1e1b4b;
+  --text-main:   #192238;
   --text-muted:  #6b7280;
   --surface:     #f8fafc;
   --border:      #e2e8f0;
@@ -332,7 +332,7 @@ nav {
 
 /* ─── Footer ─────────────────────────────────────────── */
 footer {
-  background: #1e1b4b;
+  background: #192238;
   color: rgba(255,255,255,0.65);
   text-align: center;
   padding: 2rem 1.5rem;
