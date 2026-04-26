@@ -42,25 +42,22 @@
     <section class="hero" aria-labelledby="hero-heading">
       <p class="hero-badge" aria-hidden="true">CS Capstone 2025-2026</p>
       <h1 id="hero-heading">
-        Improving the efficiency and performance of satellite research software
+        Improving the performance of satellite research software
       </h1>
       <p class="hero-sub">
-        Our project focuses on optimizing the performance of satellite research software, specifically targeting the
-        processing of GNSS (Global Navigation Satellite System) data. By implementing advanced algorithms and leveraging
-        parallel computing techniques, we aim to significantly reduce the time required for data analysis while
-        maintaining accuracy and reliability. This will enable researchers to process larger datasets more efficiently,
-        ultimately accelerating scientific discoveries in the field of satellite navigation and geospatial analysis.
+        Our project focuses on optimizing the performance of processing GNSS (Global Navigation Satellite System)
+        satellite observation and navigation data.
       </p>
 
       <div class="hero-cta-group">
         <!-- PRIMARY action -->
         <a href="https://github.com/KathrynJButler/optimizing-research-software-codes" class="btn-primary-custom"
-          aria-label="View source code on GitHub (opens in new tab)">
+          target="_blank" aria-label="View source code on GitHub (opens in new tab)">
           View our project on GitHub
         </a>
         <!-- SECONDARY action -->
-        <a href="https://github.com/KathrynJButler/optimizing-research-software-codes/tree/main/documentation"
-          class="btn-secondary-custom" aria-label="View documentation on GitHub (opens in new tab)">
+        <a href="https://github.com/KathrynJButler/optimizing-research-software-codes/blob/main/README.md"
+          target="_blank" class="btn-secondary-custom" aria-label="View README on GitHub (opens in new tab)">
           Learn how to use it
         </a>
       </div>
@@ -73,9 +70,7 @@
         <h2 class="section-title" id="features-heading">Key Features</h2>
         <p class="section-desc">
           Our tool allows you to easily convert RINEX files into a structured database format. It parses both
-          observation and navigation files, and calculates precise positions, azimuth, and elevation data. The software
-          is designed to handle large datasets efficiently, making it ideal for researchers working with extensive GNSS
-          data.
+          observation and navigation files, and calculates positions, azimuth, and elevation data.
         </p>
 
         <div class="features-grid" role="list">
@@ -85,7 +80,7 @@
             <!-- <span class="feature-icon" aria-hidden="true">📊</span> -->
             <h3>Easy RINEX File Conversion</h3>
             <p>
-              Convert RINEX files into a structured database format with just a few commands.
+              Convert one or multiple RINEX files into a structured database format with just a few commands.
             </p>
           </article>
 
@@ -102,8 +97,8 @@
           <article class="feature-card" role="listitem">
             <h3>Real-time Data Visualization</h3>
             <p>
-              Visualize GNSS data in real-time, enabling researchers to monitor and analyze satellite positions and
-              movements as they occur.
+              Visualize processing in real-time, making it easier to track progress and identify any issues with your
+              data.
             </p>
           </article>
         </div>
@@ -145,9 +140,12 @@
                 <div class="step-body">
                   <h3>Clone the repository</h3>
                   <p>
-                    Download the project to your machine using Git, or use the "Download ZIP" button on GitHub and extract it.
+                    Download the project to your machine using Git, or use the "Download ZIP" button on GitHub and
+                    extract it.
                     <br><br>
                     <code>git clone https://github.com/KathrynJButler/optimizing-research-software-codes.git</code>
+                    <br><br>
+                    Then navigate to the project directory:
                     <br>
                     <code>cd optimizing-research-software-codes/gnss_python-main</code>
                   </p>
@@ -168,6 +166,12 @@
                     <strong>Windows:</strong> <code>rnx2db_env\Scripts\activate</code>
                     <br>
                     <strong>macOS / Linux:</strong> <code>source rnx2db_env/bin/activate</code>
+                    <br><br>
+                    For a more detailed walkthrough of virtual environments, see the
+                    <a href="https://docs.python.org/3/library/venv.html" target="_blank" rel="noopener noreferrer"
+                      style="color: var(--brand-dark); font-weight: 600;"
+                      aria-label="Python virtual environments documentation (opens in new tab)">
+                      official Python venv documentation</a>.
                   </p>
                 </div>
               </li>
@@ -178,7 +182,7 @@
                   <h3>Install dependencies</h3>
                   <p>
                     With your virtual environment active, install all required packages
-                    in one command. 
+                    in one command.
                     <br><br>
                     <code>pip install -r requirements.txt</code>
                     <br><br>
@@ -214,11 +218,13 @@
               <p style="margin: 0; font-size: 0.9rem; color: var(--brand-dark);">
                 <strong>Requirements:</strong>
                 Python 3.8+, Windows / macOS / Linux.
+                <br>
                 VS Code users: the Python extension will detect your
                 <code>rnx2db_env</code> virtual environment automatically.
                 For a more detailed walkthrough, see the
                 <a href="https://github.com/KathrynJButler/optimizing-research-software-codes/tree/main/documentation"
-                  style="color: var(--brand-dark); font-weight: 600;" aria-label="Full setup documentation">
+                  style="color: var(--brand-dark); font-weight: 600;" aria-label="Full setup documentation"
+                  target="_blank">
                   full setup guide →
                 </a>
               </p>
@@ -242,9 +248,10 @@
                 aria-label="View the project source code on GitHub (opens in new tab)">
                 View on GitHub
               </a>
-              <a href="https://github.com/KathrynJButler/optimizing-research-software-codes/blob/main/README.md" class="btn-secondary-custom"
-                style="display: block; text-align: center; margin-top: 0.75rem;" target="_blank"
-                rel="noopener noreferrer" aria-label="Read the full project documentation (opens in new tab)">
+              <a href="https://github.com/KathrynJButler/optimizing-research-software-codes/blob/main/README.md"
+                class="btn-secondary-custom" style="display: block; text-align: center; margin-top: 0.75rem;"
+                target="_blank" rel="noopener noreferrer"
+                aria-label="Read the full project documentation (opens in new tab)">
                 Read the Docs
               </a>
             </div>
@@ -254,42 +261,26 @@
       </div>
     </section>
 
-    <!-- Platform / requirements note -->
-    <div
-      style="background: var(--brand-light); border-left: 4px solid var(--brand); border-radius: 0 var(--radius) var(--radius) 0; padding: 1rem 1.25rem; margin-top: 1rem;"
-      role="note" aria-label="System requirements">
-      <p style="margin: 0; font-size: 0.9rem; color: var(--brand-dark);">
-        <strong>Requirements:</strong>
-        [List OS, runtime version, or hardware needs — e.g., Python 3.10+, Windows/macOS/Linux, 4 GB RAM.]
-        If you have a full setup guide, link to it here:
-        <a href="[LINK TO FULL DOCS]" style="color: var(--brand-dark); font-weight: 600;">
-          Full setup guide →
-        </a>
-      </p>
-    </div>
-    </div>
-
     <!-- Right column: main CTA card -->
     <div>
       <div
         style="background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; text-align: center;"
         aria-label="Primary call to action">
-        <p style="font-size: 2rem; margin-bottom: 0.5rem;" aria-hidden="true">🚀</p>
         <h3 style="font-weight: 700; font-size: 1.1rem; color: var(--text-main); margin-bottom: 0.5rem;">
           Ready to explore?
         </h3>
         <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
-          [Short sentence — e.g., Browse the source code, open issues, and contribute.]
+          Browse the source code, open issues, and explore the dataset examples included in the repo.
         </p>
-        <a href="[YOUR MAIN LINK]" class="btn-primary-custom" style="display: block; text-align: center;"
-          aria-label="[Descriptive label for your main link]">
-          [Primary CTA — e.g., View on GitHub]
+        <a href="https://github.com/KathrynJButler/optimizing-research-software-codes" class="btn-primary-custom"
+          style="display: block; text-align: center;" target="_blank" rel="noopener noreferrer"
+          aria-label="View the project source code on GitHub (opens in new tab)">
+          View on GitHub
         </a>
-
-        <!-- Optional second link -->
-        <a href="[SECONDARY LINK]" class="btn-secondary-custom"
-          style="display: block; text-align: center; margin-top: 0.75rem;" aria-label="[Descriptive label]">
-          [Secondary CTA — e.g., Download Release]
+        <a href="https://github.com/KathrynJButler/optimizing-research-software-codes/blob/main/README.md"
+          class="btn-secondary-custom" style="display: block; text-align: center; margin-top: 0.75rem;" target="_blank"
+          rel="noopener noreferrer" aria-label="Read the full project documentation (opens in new tab)">
+          Read the Docs
         </a>
       </div>
     </div>
@@ -304,80 +295,66 @@
         <p class="section-label" aria-hidden="true">The people behind it</p>
         <h2 class="section-title" id="team-heading">Meet the Team</h2>
         <p class="section-desc">
-          [Optional one sentence — e.g., Built as a senior capstone project at [University], [Year].]
+          Built as a senior capstone project at Oregon State University 2025-2026.
         </p>
 
         <div class="team-grid">
-
-          <!-- Duplicate this block for each team member -->
           <div class="team-card">
-            <!--
-              Initials avatar — replace AB with first+last initials.
-              Or swap the .avatar div for an <img> with a headshot.
-            -->
-            <div class="avatar" aria-hidden="true">AB</div>
-            <h3>[Full Name]</h3>
-            <p>[Role — e.g., Backend & API / ML Model / Frontend]</p>
-            <a href="https://github.com/[username]" target="_blank" rel="noopener noreferrer"
-              aria-label="[Full Name]'s GitHub profile (opens in new tab)">
+            <div class="avatar" aria-label="KB" style="position: relative; overflow: hidden;">
+              <!-- Initials sit in the background always -->
+              <span aria-hidden="true"
+                style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+                KB
+              </span>
+              <!-- Image sits on top; on error it removes itself, revealing the initials -->
+              <img
+                src="https://media.licdn.com/dms/image/v2/D4D03AQHjtehLQ34soQ/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1710445297931?e=1778716800&v=beta&t=ECCV-SMCWONO0YvKCuvYakC5-s2YRfR4g-sExs2oT7g"
+                alt="Kathryn Butler's headshot" onerror="this.style.display='none'"
+                style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+            </div>
+            <h3>Kathryn Butler</h3>
+            <p>Project and Documentation Lead</p>
+            <a href="https://github.com/KathrynJButler" target="_blank" rel="noopener noreferrer"
+              aria-label="Kathryn Butler's GitHub profile (opens in new tab)">
+              GitHub →
+            </a>
+            <a href="https://www.linkedin.com/in/kathryn-j-butler/" target="_blank" rel="noopener noreferrer"
+              aria-label="Kathryn Butler's LinkedIn profile (opens in new tab)">
+              LinkedIn →
+            </a>
+          </div>
+
+          <div class="team-card">
+            <div class="avatar" aria-hidden="true">JS</div>
+            <h3>Joseph Schaab</h3>
+            <p>Backend Developer</p>
+            <a href="https://github.com/josephschaab" target="_blank" rel="noopener noreferrer"
+              aria-label="Joseph Schaab's GitHub profile (opens in new tab)">
               GitHub →
             </a>
           </div>
 
           <div class="team-card">
-            <div class="avatar" aria-hidden="true">CD</div>
-            <h3>[Full Name]</h3>
-            <p>[Role]</p>
-            <a href="https://github.com/[username]" target="_blank" rel="noopener noreferrer"
-              aria-label="[Full Name]'s GitHub profile (opens in new tab)">
+            <div class="avatar" aria-hidden="true">MM</div>
+            <h3>Michael McAllister</h3>
+            <p>Project Developer</p>
+            <a href="https://github.com/McallMic" target="_blank" rel="noopener noreferrer"
+              aria-label="Michael McAllister's GitHub profile (opens in new tab)">
               GitHub →
             </a>
           </div>
-
-          <div class="team-card">
-            <div class="avatar" aria-hidden="true">EF</div>
-            <h3>[Full Name]</h3>
-            <p>[Role]</p>
-            <a href="https://github.com/[username]" target="_blank" rel="noopener noreferrer"
-              aria-label="[Full Name]'s GitHub profile (opens in new tab)">
-              GitHub →
-            </a>
-          </div>
-
-          <!-- Add more team-card blocks as needed -->
-
         </div>
-
-        <!-- Past contributors — only include if this is a multi-year project -->
-        <!--
-        <div style="margin-top: 2.5rem; padding: 1.5rem; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border);">
-          <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">Past Contributors</h3>
-          <p style="color: var(--text-muted); font-size: 0.95rem; margin: 0;">
-            This project builds on work by the [Year] capstone team:
-            <a href="[GitHub link]">[Name 1]</a>,
-            <a href="[GitHub link]">[Name 2]</a>,
-            <a href="[GitHub link]">[Name 3]</a>.
-          </p>
-        </div>
-        -->
 
         <!-- Contact / Feedback banner -->
         <div class="contact-banner" role="complementary" aria-label="Contact and feedback">
           <h2>Questions or Feedback?</h2>
           <p>
-            Found a bug, have a question, or just want to say hi?
-            We'd love to hear from you.
+            Found a bug, have a question, or just want to say hi? We'd love to hear from you.
           </p>
-          <a href="[YOUR GITHUB ISSUES LINK — e.g., https://github.com/yourname/project/issues]" class="btn-white"
+          <a href="https://github.com/KathrynJButler/optimizing-research-software-codes/issues" class="btn-white"
             target="_blank" rel="noopener noreferrer" aria-label="Open an issue on GitHub (opens in new tab)">
             Open an Issue on GitHub
           </a>
-          <!-- Or use mailto: if you prefer email -->
-          <!--
-          <a href="mailto:[your-email@example.com]" class="btn-white" aria-label="Send us an email">
-            Email Us
-          </a>
-          -->
         </div>
 
       </div>
@@ -388,18 +365,18 @@
   <!-- ─── Footer ───────────────────────────────────────────── -->
   <footer role="contentinfo">
     <p>
-      &copy; 2026 [Project Name] — Built by [Team Name or Names] as part of
-      <a href="[University or course link]">[University / Course]</a>.
+      &copy; 2026 CS.028 Optimizing Research Software Codes — Built as part of
+      <a href="https://capstone.alexulbrich.com/introduction/series/">Oregon State University's Computer Science capstone program</a>.
     </p>
     <p style="margin-top: 0.4rem;">
-      <a href="[YOUR GITHUB REPO]" aria-label="View source code on GitHub">GitHub</a>
+      <a href="https://github.com/KathrynJButler/optimizing-research-software-codes" aria-label="View source code on GitHub">GitHub</a>
       &nbsp;·&nbsp;
-      <a href="[YOUR GITHUB ISSUES LINK]" aria-label="Open a GitHub issue to report a bug or give feedback">Issues /
+      <a href="https://github.com/KathrynJButler/optimizing-research-software-codes/issues" aria-label="Open a GitHub issue to report a bug or give feedback">Issues /
         Feedback</a>
     </p>
   </footer>
 
-  <!-- Bootstrap JS bundle (includes Popper) — needed only if you use modals, dropdowns, etc. -->
+  <!-- Bootstrap JS bundle -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"
     integrity="sha512-7Pi/otdlbbCR+LnW+F7PwFcSDJOuUJB3OxtEHbg4vSMvzvJjde4Po1v4BR9Gdc9aXNUNFVUY+SK51wWT8WF9Gg=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
