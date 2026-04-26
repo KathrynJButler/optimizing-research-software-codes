@@ -34,8 +34,8 @@ def opener(fn: T.TextIO | Path, header: bool = False) -> T.Iterator[T.TextIO]:
             raise FileNotFoundError(fn)
 
         finf = fn.stat()
-        if finf.st_size > 100e6:
-            logging.info(f"opening {finf.st_size/1e6} MByte {fn.name}")
+        # if finf.st_size > 100e6:
+        #     logging.info(f"opening {finf.st_size/1e6} MByte {fn.name}")
 
         suffix = fn.suffix.lower()
 
