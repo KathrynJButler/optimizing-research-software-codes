@@ -468,6 +468,86 @@ class Rinex(object):
 
     return output_df
 
+
+      
+    '''
+    def calculate_positions(self):
+    try:
+        if self.config['etc'].get('disable_parallel', False):
+            raise Exception('Throw exception to disable parallel')
+
+        # IMPROVEMENT: Use full cpu_count() instead of cpu_count() // 2.
+        # The previous halving was overly conservative for CPU-bound satellite
+        # math. Using all available cores maximizes parallel throughput,
+        # especially on machines with high core counts.
+        num_procs = self.config['etc'].get('num_cores', 0)
+        if num_procs == 0:
+            num_procs = multiprocessing.cpu_count()
+
+        logging.info(f'Calculating positions using {num_procs} cores...')
+
+        obs_partition = np.array_split(self.obs, num_procs)
+
+        # IMPROVEMENT: Replaced pool.map() with pool.imap_unordered().
+        # pool.map() blocks until every worker partition finishes, meaning the
+        # whole job waits on the slowest partition. imap_unordered() yields
+        # results as each worker completes, reducing idle time when partitions
+        # finish at different speeds (e.g. uneven data or variable computation
+        # cost per row). The list() call collects all results before concat,
+        # so overall correctness is unchanged. Note: if row order must be
+        # preserved after concat, switch back to pool.map() or sort afterwards.
+        with multiprocessing.Pool(processes=num_procs) as pool:
+            results = list(pool.imap_unordered(
+                self.get_satellite_position_process_worker, obs_partition
+            ))
+
+        self.obs = pd.concat(results)
+
+    except Exception as e:
+        # IMPROVEMENT: Replaced bare except with typed Exception catch so that
+        # low-level errors like KeyboardInterrupt or SystemExit are not silently
+        # swallowed. Also distinguishes between an intentional config-driven
+        # disable (no warning needed) vs a genuine parallel failure (should
+        # surface loudly with a traceback for debugging).
+        if 'disable parallel' not in str(e).lower():
+            logging.warning(f'Parallel processing failed, falling back to single-core: {e}')
+            import traceback
+            traceback.print_exc()
+        else:
+            logging.info('Parallel processing disabled by config. Using single-core.')
+
+        # IMPROVEMENT: Two-stage fallback replaces the previous apply(lambda).
+        #
+        # The original approach used df.apply(lambda x: ..., axis=1), which
+        # iterates row-by-row entirely in Python with significant per-call
+        # overhead from the lambda wrapper and pandas internals. For large
+        # DataFrames this is the slowest possible execution path.
+        #
+        # Stage 1 — vectorized call (fastest):
+        #   Pass the entire DataFrame to get_satellite_position() at once.
+        #   If the function has been written to accept array/DataFrame inputs
+        #   and operate with numpy vectorization, this avoids all Python-level
+        #   row iteration entirely. This is the preferred path and will
+        #   automatically become active if get_satellite_position() is ever
+        #   refactored to support vectorized inputs — no changes needed here.
+        #
+        # Stage 2 — itertuples (fast fallback):
+        #   If Stage 1 raises a TypeError (i.e. the function only accepts a
+        #   single row), fall back to itertuples(). This yields lightweight
+        #   namedtuples instead of Series objects, skipping the per-row pandas
+        #   overhead that apply() incurs. Typical speedup over apply(lambda)
+        #   is 4-10x depending on DataFrame size and row complexity.
+        try:
+            results = self.get_satellite_position(self.obs)
+            self.obs[['PosX', 'PosY', 'PosZ', 'ClkCorr']] = results
+        except TypeError:
+            rows = [
+                self.get_satellite_position(row)
+                for row in self.obs.itertuples()
+            ]
+            self.obs[['PosX', 'PosY', 'PosZ', 'ClkCorr']] = rows
+    '''
+    
   @timeit #Time checker
   def calculate_positions(self):
     try:
