@@ -26,6 +26,14 @@ from timer_func import timeit, print_timing_stats #Time checker
 # suppress warnings and log to file
 import warnings
 
+_OUTPUT_COLUMNS = [
+    "SatID", "Time", "MJS", "ClkCorr",
+    "PosX", "PosY", "PosZ",
+    "AziAngle", "ElevAngle",
+    "FreqBand", "SignalStrength",
+    "CarrierPhase", "Doppler", "CA", "P",
+]
+
 log_file = open("warning_log.txt", "w")
 
 def warning_handler(message, category, filename, lineno, file=None, line=None):
@@ -177,45 +185,178 @@ class Rinex(object):
         pass # skip if issue still occurs
     return pd.concat(tmp)
 
+  # ── helpers ──────────────────────────────────────────────────────────────────
 
-  # not completed yet
-  def parse_streaming(self):
+  def _build_output_path(self) -> str:
+      """Return the output CSV path, creating parent dirs if needed."""
+      base = (
+          self.output_dir
+          if self.output_dir is not None
+          else os.path.join(self.config["rinex"]["output_dir"])
+      )
+      output_file = os.path.join(
+          base,
+          self.config["station"]["id"],
+          "compactdb",
+          f"{self.year}-{self.doy}",
+      )
+      if self.hour_minute_index is not None:
+          output_file += f"-{self.hour_minute_index}"
+      output_file += ".csv"
+      os.makedirs(os.path.dirname(output_file), exist_ok=True)
+      return output_file
+
+
+  def calculate_positions_streaming(self, chunk: pd.DataFrame) -> pd.DataFrame:
+      """
+      Exactly like calculate_positions() but operates on an arbitrary sub-DataFrame
+      instead of self.obs.  The chunk is modified in-place and returned.
+      """
+      try:
+          if self.config["etc"].get("disable_parallel", False):
+              raise RuntimeError("parallel disabled in config")
+
+          num_procs = self.config["etc"].get("num_cores", 0) or (
+              multiprocessing.cpu_count() // 2
+          )
+          partitions = np.array_split(chunk, num_procs * 4)
+
+          with multiprocessing.Pool(processes=num_procs) as pool:
+              results = list(
+                  tqdm(
+                      pool.imap(self.get_satellite_position_process_worker, partitions),
+                      total=len(partitions),
+                      desc="  positions",
+                      unit="partition",
+                      leave=False,
+                  )
+              )
+          return pd.concat(results)
+
+      except Exception:
+          import traceback
+          traceback.print_exc()
+          logging.warning("Parallel failed — falling back to single core")
+          chunk[["PosX", "PosY", "PosZ", "ClkCorr"]] = chunk.apply(
+              lambda x: self.get_satellite_position(x), axis=1, result_type="expand"
+          )
+          return chunk
+
+  def _build_output_rows(self, chunk: pd.DataFrame, recv: np.ndarray) -> list:
+      """
+      Iterate over one processed chunk and return a list of output rows.
+      Extracted from parse() so it can be called per-chunk in parse_streaming().
+      """
+      rows = []
+      for item in chunk.itertuples():
+          res = self.get_additional_fields(item)
+          if not res:           # satellite has no recognised frequency bands
+              continue
+
+          elevation, azimuth = compute.calculate_elevation_azimuth(
+              recv,
+              np.array([item.PosX, item.PosY, item.PosZ]),
+          )
+
+          # MultiIndex can be (sv, time) or (time, sv) depending on georinex version
+          if isinstance(item.Index[0], str):
+              sat_id, dt = item.Index[0], item.Index[1]
+          else:
+              sat_id, dt = item.Index[1], item.Index[0]
+
+          for r in res:
+              rows.append([
+                  sat_id, dt, item.MJS, item.ClkCorr,
+                  item.PosX, item.PosY, item.PosZ,
+                  azimuth, elevation,
+                  r[0], r[1], r[2], r[3], r[4], r[5],
+              ])
+      return rows
+
+
+  # ── streaming parser ──────────────────────────────────────────────────────────
+
+  @timeit
+  def parse_streaming(self) -> None:
     """
-    Parse observation and navigation file and calculate position, azimuth, and elevation
+    Streaming version of parse().
+
+    Processes observations one hourly window at a time so the peak
+    in-memory row list never grows beyond ~one hour of data.  Results
+    are written to the same CSV path as parse(), appending chunk by chunk.
+
+    Note: self.obs is still fully loaded in __init__ via georinex.
+    "Streaming" here means we avoid accumulating the entire output rows
+    list before writing — useful when the obs file spans many hours.
     """
-    recv = np.array(self.config['station']['info'])
+    # ── 1. Shared setup (same as parse) ──────────────────────────────────
+    sv_index = self.obs.index.get_level_values("sv")
+    self.obs = self.obs[sv_index.str.startswith(tuple(self.constellations))]
+    self.nav = self.nav[self.nav.SVclockBias.notna()]
+
+    fields = [
+      "PosX", "PosY", "PosZ", "ClkCorr",
+      "FreqBand", "SignalStrength", "CarrierPhase", "Doppler", "CA", "P", "MJS",
+    ]
+    for f in fields:
+      self.obs[f] = np.nan
+
+    if "MJS" not in self.nav.columns:
+      self.nav.insert(self.nav.shape[1], "MJS", -1)
+
+    self.add_mjd_column(self.obs)
+    self.add_mjd_column(self.nav)
+
+    recv = np.array(self.config["station"]["info"])
     output_file = self._build_output_path()
-    
-    # Get sorted unique time windows (floor to nearest hour)
-    times = pd.to_datetime(
-        self.obs.index.get_level_values('time')
-    ).floor('H').unique()
-    
+
+    # ── 2. Build sorted hourly buckets ───────────────────────────────────
+    time_vals = pd.to_datetime(self.obs.index.get_level_values("time"))
+    hour_starts = time_vals.floor("H").unique().sort_values()
+    logging.info(f"Streaming over {len(hour_starts)} hourly windows → {output_file}")
+
     first_chunk = True
-    
-    for t in tqdm(times, desc="Processing time windows"):
-        # Pull just this hour's obs
-        chunk = self.obs.xs(
-            slice(t, t + pd.Timedelta(hours=1)),
-            level='time', drop_level=False
-        )
-        
-        # Add MJS, compute positions for just this chunk
-        self.add_mjd_column(chunk)
-        chunk = self.calculate_positions_streaming(chunk)
-        chunk = chunk.dropna(subset=['PosX', 'PosY', 'PosZ'])
-        
-        # Build output rows for just this chunk
-        rows = self._build_output_rows(chunk, recv)
-        
-        out_df = pd.DataFrame(rows, columns=[...])
-        out_df.to_csv(
-            output_file,
-            mode='w' if first_chunk else 'a',
-            header=first_chunk,
-            index=False
-        )
-        first_chunk = False
+
+    for t in tqdm(hour_starts, desc="Streaming time windows"):
+      t_end = t + pd.Timedelta(hours=1)
+
+      # Boolean mask — safer than xs(slice(...)) across MultiIndex layouts
+      mask = (time_vals >= t) & (time_vals < t_end)
+      chunk = self.obs[mask].copy()   # .copy() prevents SettingWithCopyWarning
+
+      if chunk.empty:
+        continue
+
+      # ── 3. Positions ─────────────────────────────────────────────────
+      chunk = self.calculate_positions_streaming(chunk)
+      chunk = chunk.dropna(subset=["PosX", "PosY", "PosZ"])
+
+      if chunk.empty:
+        continue
+
+      # Sort by (time, sv) — both are index levels, so use sort_index()
+      # NOTE: parse() has a bug here — sort_values(['time','sv']) silently
+      # does nothing because those are index levels, not columns.
+      chunk = chunk.sort_index()
+
+      # ── 4. Build rows & write ─────────────────────────────────────────
+      rows = self._build_output_rows(chunk, recv)
+
+      if not rows:
+        continue
+
+      pd.DataFrame(rows, columns=_OUTPUT_COLUMNS).to_csv(
+        output_file,
+        mode="w" if first_chunk else "a",
+        header=first_chunk,
+        index=False,
+      )
+      first_chunk = False
+
+    if first_chunk:
+      logging.warning("parse_streaming: no output rows were produced.")
+    else:
+      logging.info(f"Done → {output_file}")
     
 
   @timeit #Time checker
@@ -1054,6 +1195,7 @@ def main():
     # output that the processing has started
     logging.info("Processing RINEX files...")
     rx.parse()
+    # rx.parse_streaming()
   logging.info("Processing completed.")
   end = time.time()
   logging.info(f"Total runtime: {end - start:.2f} seconds ({((end-start)/60):.0f} minutes).")
