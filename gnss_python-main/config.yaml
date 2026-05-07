@@ -4,9 +4,9 @@ rinex:
   singlefile:
     date: '2024-07-10'
     observation:
-      - C:\Projects\optimizing-research-software-codes\Datasets\COVL_1sec\SEPT2620.25O
+      - C:\Projects\optimizing-research-software-codes\Datasets\COVL_1sec\NOME1190_rnx2.25O
     navigation:
-      - C:\Projects\optimizing-research-software-codes\Datasets\COVL_1sec\SEPT2621.25P
+      - C:\Projects\optimizing-research-software-codes\Datasets\COVL_1sec\NOME1190.25P
   output_dir: C:\Projects\optimizing-research-software-codes\gnss_python-main\output\ALIC\compactdb
   obs_size_threashold: 80
 constellations:

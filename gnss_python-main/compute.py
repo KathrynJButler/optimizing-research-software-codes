@@ -48,6 +48,27 @@ def calculate_elevation_azimuth(recv, sat) -> list:
   return [elevation, azimuth]
 
 
+def calculate_elevation_azimuth_batch(recv, sat_array) -> np.ndarray:
+    """
+    Vectorized version of calculate_elevation_azimuth.
+    recv: shape (3,) - single receiver position
+    sat_array: shape (N, 3) - all satellite positions
+    returns: shape (N, 2) - [[elevation, azimuth], ...]
+    """
+    r = sat_array - recv  # (N, 3)
+    gps = ECEFtoGPS(recv)
+    
+    # vectorize ENU conversion across all rows
+    enu = np.array([XYZtoENU(row, gps[0], gps[1]) for row in r])  # (N, 3)
+    
+    enu_norm = np.linalg.norm(enu, axis=1)  # (N,)
+    
+    elevation = np.degrees(np.arcsin(enu[:, 2] / enu_norm))
+    azimuth = np.degrees(np.arctan2(enu[:, 0] / enu_norm, enu[:, 1] / enu_norm))
+    azimuth[azimuth < 0] += 360
+    
+    return np.column_stack([elevation, azimuth])
+
 def antenna_height_gps(prn, rx, config):
   mean_time = rx.data_frame['MJS Timestamp'].mean()
   gre = mjd2gre(mean_time)

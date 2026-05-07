@@ -194,12 +194,10 @@ class Rinex(object):
           if self.output_dir is not None
           else os.path.join(self.config["rinex"]["output_dir"])
       )
-      output_file = os.path.join(
-          base,
-          self.config["station"]["id"],
-          "compactdb",
-          f"{self.year}-{self.doy}",
-      )
+      year = self.year if self.year is not None else "unknown"
+      doy = self.doy if self.doy is not None else "unknown"
+      output_file = os.path.join(base, self.config["station"]["id"], 
+                                "compactdb", f"{year}-{doy}")
       if self.hour_minute_index is not None:
           output_file += f"-{self.hour_minute_index}"
       output_file += ".csv"
@@ -313,7 +311,7 @@ class Rinex(object):
     # ── 2. Build sorted hourly buckets ───────────────────────────────────
     time_vals = pd.to_datetime(self.obs.index.get_level_values("time"))
     hour_starts = time_vals.floor("H").unique().sort_values()
-    logging.info(f"Streaming over {len(hour_starts)} hourly windows → {output_file}")
+    logging.info(f"Streaming to {output_file}")
 
     first_chunk = True
 
@@ -355,8 +353,6 @@ class Rinex(object):
 
     if first_chunk:
       logging.warning("parse_streaming: no output rows were produced.")
-    else:
-      logging.info(f"Done → {output_file}")
     
 
   @timeit #Time checker
@@ -418,43 +414,34 @@ class Rinex(object):
 
     self.obs = self.obs.sort_values(['time', 'sv'])
 
-    rows = []
     recv = np.array(self.config['station']['info'])
 
+    # batch elevation/azimuth for all rows at once
+    sat_positions = self.obs[['PosX', 'PosY', 'PosZ']].dropna().values
+    el_az = compute.calculate_elevation_azimuth_batch(recv, sat_positions)
+
+    # store back onto obs so the loop can just read it
+    self.obs.loc[self.obs[['PosX','PosY','PosZ']].dropna().index, 'ElevAngle'] = el_az[:, 0]
+    self.obs.loc[self.obs[['PosX','PosY','PosZ']].dropna().index, 'AziAngle'] = el_az[:, 1]
+
+    rows = []
     for item in tqdm(self.obs.itertuples(), total=len(self.obs), desc="Building output rows"):
+        res = self.get_additional_fields(item)
+        if not res:
+            continue
+        
+        if isinstance(item.Index[0], str):
+            sat_id, dt = item.Index[0], item.Index[1]
+        else:
+            sat_id, dt = item.Index[1], item.Index[0]
 
-      res = self.get_additional_fields(item)
-
-      elevation, azimuth = compute.calculate_elevation_azimuth(
-          recv,
-          np.array([item.PosX, item.PosY, item.PosZ])
-      )
-
-      if isinstance(item.Index[0], str):
-        sat_id = item.Index[0]
-        dt = item.Index[1]
-      else:
-        sat_id = item.Index[1]
-        dt = item.Index[0]
-
-      for r in res:
-        rows.append([
-            sat_id,
-            dt,
-            item.MJS,
-            item.ClkCorr,
-            item.PosX,
-            item.PosY,
-            item.PosZ,
-            azimuth,
-            elevation,
-            r[0],
-            r[1],
-            r[2],
-            r[3],
-            r[4],
-            r[5]
-        ])
+        for r in res:
+            rows.append([
+                sat_id, dt, item.MJS, item.ClkCorr,
+                item.PosX, item.PosY, item.PosZ,
+                item.AziAngle, item.ElevAngle,
+                r[0], r[1], r[2], r[3], r[4], r[5]
+            ])
 
     output_df = pd.DataFrame(rows, columns=[
         'SatID', 'Time', 'MJS', 'ClkCorr',
