@@ -96,7 +96,6 @@ def antenna_height_gps(prn, rx, config):
   for mask in config['mask']['azimuth']:
     data_frame = data_frame.query(f'AziAngle < {mask[0]} | AziAngle >= {mask[1]}')
 
-
   for mask in config['mask']['elevation']:
     data_frame = data_frame.query(f'ElevAngle < {mask[0]} | ElevAngle >= {mask[1]}')
 
@@ -149,6 +148,3 @@ def antenna_height_gps(prn, rx, config):
       data_frame[data_frame.index == idx]
       """
       div_idx_str_end.append([div_idx_str[-1], div_idx_end[-1]])
-
-
-
