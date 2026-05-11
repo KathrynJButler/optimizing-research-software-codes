@@ -205,8 +205,8 @@ class Rinex(object):
     self.nav.insert(self.nav.shape[1], 'MJS', -1)
 
     # Add MJS Timestamp (vectorized)
-    self.add_mjd_column(self.obs)
-    self.add_mjd_column(self.nav)
+    self.add_mjd_column(self.obs, apply_time_adjustments=False)
+    self.add_mjd_column(self.nav, apply_time_adjustments=True)
 
     # Calculate satellite positions
     self.calculate_positions()
@@ -573,11 +573,6 @@ class Rinex(object):
     else:
       return -1
 
-  def get_satellite_position_partition(self, df):
-    for i in df.itertuples():
-      df[['PosX', 'PosY', 'PosZ', 'ClkCorr']] = self.get_satellite_position(i)
-    return df
-
   def get_satellite_position(self, sat):
     try:
       if isinstance(sat.name[0], str):
@@ -823,23 +818,6 @@ class Rinex(object):
     except:
       return None
 
-  def to_mjd(self, d, prn='G'):
-    year_diff = d.year - 1980
-    num_leap = math.ceil(year_diff / 4)
-    is_leaf = d.year % 4 == 0
-
-    gps_days = year_diff * 365 + num_leap + d.day - 6
-    if is_leaf:
-      gps_days += Rinex._leap_months[d.month - 1]
-    else:
-      gps_days += Rinex._normal_months[d.month - 1]
-    mjs = Rinex._gpst_0 + gps_days * Rinex._sec_per_day + d.hour * 3600
-    mjs += d.minute * 60 + d.second
-
-    mjs = self.adjust_to_gps_time(mjs, d, prn)
-
-    return mjs
-
   def adjust_to_gps_time(self, mjs, d, prn):
     if prn.startswith('C'):
       mjs += 14
@@ -854,7 +832,7 @@ class Rinex(object):
         total_leap += 1
     return total_leap
   
-  def add_mjd_column(self, df):
+  def add_mjd_column(self, df, apply_time_adjustments=True):
     # Detect which index level is PRN vs datetime
     lvl0 = df.index.get_level_values(0)
 
@@ -894,22 +872,22 @@ class Rinex(object):
     )
 
     # ---- GPS time adjustments ----
+    if apply_time_adjustments:
+      # Beidou
+      mask_c = prn_series.str.startswith('C')
+      mjs[mask_c] += 14
 
-    # Beidou
-    mask_c = prn_series.str.startswith('C')
-    mjs[mask_c] += 14
-
-    # GLONASS
-    mask_r = prn_series.str.startswith('R')
-    if mask_r.any():
-        leap_seconds = []
-        for d in dt_series[mask_r]:
-            total = 0
-            for l in self.config['etc']['leap_second']:
-                if d.date() > l:
-                    total += 1
-            leap_seconds.append(total)
-        mjs[mask_r] += leap_seconds
+      # GLONASS
+      mask_r = prn_series.str.startswith('R')
+      if mask_r.any():
+          leap_seconds = []
+          for d in dt_series[mask_r]:
+              total = 0
+              for l in self.config['etc']['leap_second']:
+                  if d.date() > l:
+                      total += 1
+              leap_seconds.append(total)
+          mjs[mask_r] += leap_seconds
 
     df['MJS'] = mjs.values
 
