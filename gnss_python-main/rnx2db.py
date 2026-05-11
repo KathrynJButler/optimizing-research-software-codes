@@ -131,7 +131,7 @@ class Rinex(object):
     if self.config['rinex'].get('obs_size_threashold', 64) < (file_stat.st_size / 1024 / 1024):
       if self._get_obs_version(obs) == 3:
         logging.info('Large obs version 3 file detected!')
-        # self._obs_to_version_2(obs)
+        self._obs_to_version_2(obs)
 
   def _get_obs_version(self, obs):
     with open(obs, 'r') as fp:
@@ -268,11 +268,11 @@ class Rinex(object):
 
     output_df = pd.DataFrame(rows, columns=_OUTPUT_COLUMNS)
 
+    logging.info(f'Saving to CSV (will take a few moments)...')
     output_df.to_csv(output_file, index=False)
+    logging.info(f'Output saved to {output_file}.')
 
     return output_df
-
-
       
     '''
     def calculate_positions(self):
