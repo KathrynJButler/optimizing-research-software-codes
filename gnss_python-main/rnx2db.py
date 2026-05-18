@@ -275,6 +275,28 @@ class Rinex(object):
     return output_df
       
     '''
+    # Integration Guide
+    #
+    # This updated calculate_positions() method is a drop-in replacement for the
+    # existing implementation and requires no changes to the surrounding codebase
+    # or any callers of this method. To integrate, simply replace the existing
+    # calculate_positions() method body in your class with this new implementation.
+    # Ensure that 'import traceback' is present at the top of the file alongside
+    # your existing imports rather than inline inside the except block, as this
+    # implementation references it at the module level. All existing config keys
+    # ('disable_parallel', 'num_cores') are fully respected and behave identically
+    # to before, so no changes to config files or environment setup are required.
+    # The get_satellite_position_process_worker() and get_satellite_position()
+    # methods are called in the same way as before, meaning no modifications to
+    # those methods are needed unless you choose to optionally refactor
+    # get_satellite_position() to accept vectorized DataFrame inputs, which would
+    # activate the faster Stage 1 fallback path automatically. Dependencies are
+    # unchanged — multiprocessing, numpy, pandas, tqdm, and logging are all
+    # already present in the existing codebase and no new packages need to be
+    # installed.
+
+    ###
+    
     def calculate_positions(self):
     
     # Calculate satellite positions either in parallel (preferred) or single-core (fallback).
