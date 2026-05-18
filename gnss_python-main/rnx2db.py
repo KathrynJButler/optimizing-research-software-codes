@@ -276,75 +276,65 @@ class Rinex(object):
       
     '''
     def calculate_positions(self):
+    
+    # Calculate satellite positions either in parallel (preferred) or single-core (fallback).
+    # Parallel path uses all available cores and imap_unordered() for maximum throughput.
+    # Single-core path attempts vectorized execution first, then falls back to itertuples().
+    
     try:
         if self.config['etc'].get('disable_parallel', False):
-            raise Exception('Throw exception to disable parallel')
+            raise Exception('disable parallel')
 
-        # IMPROVEMENT: Use full cpu_count() instead of cpu_count() // 2.
-        # The previous halving was overly conservative for CPU-bound satellite
-        # math. Using all available cores maximizes parallel throughput,
-        # especially on machines with high core counts.
-        num_procs = self.config['etc'].get('num_cores', 0)
-        if num_procs == 0:
-            num_procs = multiprocessing.cpu_count()
-
+        # Use all available cores for CPU-bound satellite math.
+        # Falls back to config override if specified.
+        num_procs = self.config['etc'].get('num_cores', 0) or multiprocessing.cpu_count()
         logging.info(f'Calculating positions using {num_procs} cores...')
 
+        # One partition per core — avoids the excess IPC overhead of num_procs * 4 chunks.
         obs_partition = np.array_split(self.obs, num_procs)
 
-        # IMPROVEMENT: Replaced pool.map() with pool.imap_unordered().
-        # pool.map() blocks until every worker partition finishes, meaning the
-        # whole job waits on the slowest partition. imap_unordered() yields
-        # results as each worker completes, reducing idle time when partitions
-        # finish at different speeds (e.g. uneven data or variable computation
-        # cost per row). The list() call collects all results before concat,
-        # so overall correctness is unchanged. Note: if row order must be
-        # preserved after concat, switch back to pool.map() or sort afterwards.
         with multiprocessing.Pool(processes=num_procs) as pool:
-            results = list(pool.imap_unordered(
-                self.get_satellite_position_process_worker, obs_partition
-            ))
+            # imap_unordered() yields results as each worker finishes rather than
+            # waiting on the slowest partition like pool.map() does.
+            # Note: if output row order matters, switch to pool.map() or sort after concat.
+            results = list(
+                tqdm(
+                    pool.imap_unordered(
+                        self.get_satellite_position_process_worker,
+                        obs_partition
+                    ),
+                    total=len(obs_partition),
+                    desc="Calculating satellite positions",
+                    unit="partition"
+                )
+            )
 
         self.obs = pd.concat(results)
 
     except Exception as e:
-        # IMPROVEMENT: Replaced bare except with typed Exception catch so that
-        # low-level errors like KeyboardInterrupt or SystemExit are not silently
-        # swallowed. Also distinguishes between an intentional config-driven
-        # disable (no warning needed) vs a genuine parallel failure (should
-        # surface loudly with a traceback for debugging).
-        if 'disable parallel' not in str(e).lower():
-            logging.warning(f'Parallel processing failed, falling back to single-core: {e}')
-            import traceback
-            traceback.print_exc()
+        # Typed Exception catch prevents low-level signals (KeyboardInterrupt, SystemExit)
+        # from being silently swallowed by a bare except clause.
+        if 'disable parallel' in str(e).lower():
+            logging.info('Parallel processing disabled via config. Falling back to single-core.')
         else:
-            logging.info('Parallel processing disabled by config. Using single-core.')
+            # Genuine failure — surface the full traceback for debugging.
+            logging.warning(f'Parallel processing failed, falling back to single-core: {e}')
+            traceback.print_exc()
 
-        # IMPROVEMENT: Two-stage fallback replaces the previous apply(lambda).
-        #
-        # The original approach used df.apply(lambda x: ..., axis=1), which
-        # iterates row-by-row entirely in Python with significant per-call
-        # overhead from the lambda wrapper and pandas internals. For large
-        # DataFrames this is the slowest possible execution path.
-        #
-        # Stage 1 — vectorized call (fastest):
-        #   Pass the entire DataFrame to get_satellite_position() at once.
-        #   If the function has been written to accept array/DataFrame inputs
-        #   and operate with numpy vectorization, this avoids all Python-level
-        #   row iteration entirely. This is the preferred path and will
-        #   automatically become active if get_satellite_position() is ever
-        #   refactored to support vectorized inputs — no changes needed here.
-        #
-        # Stage 2 — itertuples (fast fallback):
-        #   If Stage 1 raises a TypeError (i.e. the function only accepts a
-        #   single row), fall back to itertuples(). This yields lightweight
-        #   namedtuples instead of Series objects, skipping the per-row pandas
-        #   overhead that apply() incurs. Typical speedup over apply(lambda)
-        #   is 4-10x depending on DataFrame size and row complexity.
+        # Stage 1 — Vectorized (fastest):
+        # Pass the full DataFrame to get_satellite_position() at once.
+        # If the function supports numpy/array inputs, this eliminates all
+        # Python-level row iteration. Will activate automatically if
+        # get_satellite_position() is refactored to support vectorized inputs.
         try:
             results = self.get_satellite_position(self.obs)
             self.obs[['PosX', 'PosY', 'PosZ', 'ClkCorr']] = results
+
         except TypeError:
+            # Stage 2 — itertuples() (fast fallback):
+            # Used when get_satellite_position() only accepts a single row.
+            # itertuples() yields lightweight namedtuples rather than Series objects,
+            # skipping per-row pandas overhead. Typically 4-10x faster than apply(lambda).
             rows = [
                 self.get_satellite_position(row)
                 for row in self.obs.itertuples()
