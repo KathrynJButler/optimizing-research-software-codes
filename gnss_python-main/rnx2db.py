@@ -1,4 +1,5 @@
 import datetime
+from email.mime import base
 import multiprocessing
 import os
 import re
@@ -101,6 +102,7 @@ class Rinex(object):
     self.constellations = constellations
     self.nav_files = nav_files
     self.obs_files = obs_files
+    self.obs_basename = os.path.basename(self.obs_files[0])
     self.output_dir = output_dir
     self.year = year
     self.doy = doy
@@ -218,22 +220,9 @@ class Rinex(object):
     #self.obs.sort_values(['time', 'sv'])[['MJS', 'PosX', 'PosY', 'PosZ']].to_csv(os.path.join('data', 'compactdb.csv'))
 
     # write parsed data to csv
-    if self.output_dir is not None:
-      output_file = os.path.join(self.output_dir, self.config['station']['id'], 'compactdb', f'{self.year}-{self.doy}')
-
-      if self.hour_minute_index is not None:
-        output_file += f'-{self.hour_minute_index}'
-      output_file += '.csv'
-      os.makedirs(os.path.dirname(output_file), exist_ok=True)
-
-    else:
-      output_file = os.path.join(self.config['rinex']['output_dir'], self.config['station']['id'],
-                                 'compactdb', f'{self.year}-{self.doy}')
-
-      if self.hour_minute_index is not None:
-        output_file += f'-{self.hour_minute_index}'
-      output_file += '.csv'
-      os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    base = self.output_dir if self.output_dir is not None else self.config['rinex']['output_dir']
+    output_file = os.path.join(base, self.config['station']['id'], 'compactdb', self.obs_basename + '.csv')
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     self.obs = self.obs.sort_values(['time', 'sv'])
 
