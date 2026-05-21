@@ -4,10 +4,10 @@ rinex:
   singlefile:
     date: '2024-07-10'
     observation:
-      - C:\Projects\optimizing-research-software-codes\Datasets\COVL_1sec\NOME1190_rnx2.25O
+      - .\observation\NOME1190_rnx2.25O
     navigation:
-      - C:\Projects\optimizing-research-software-codes\Datasets\COVL_1sec\NOME1190.25P
-  output_dir: C:\Projects\optimizing-research-software-codes\gnss_python-main\output
+      - .\navigation\NOME1190.25P
+  output_dir: .\output
   obs_size_threashold: 80
 constellations:
   - G
@@ -15,7 +15,6 @@ constellations:
   - E
   - C
 station:
-  id: 'ALIC'
   info: [-4052052.7072, 4212835.9827, -2545104.6244]
 etc:
   disable_parallel: false
