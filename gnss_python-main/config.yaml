@@ -1,8 +1,10 @@
+station:
+  # if the station position isn't found in the header, manually input it here
+  info: [NULL, NULL, NULL]
 rinex:
   multiday: # options for multiday process
     enabled: false # if true, it will read obs_location directory and try to process all data
   singlefile:
-    date: '2024-07-10'
     observation:
       - .\observation\NOME1190_rnx2.25O
     navigation:
@@ -14,26 +16,5 @@ constellations:
   - R
   - E
   - C
-station:
-  info: [-4052052.7072, 4212835.9827, -2545104.6244]
 etc:
   disable_parallel: false
-  leap_second:
-    - 1981-06-30
-    - 1982-06-30
-    - 1983-06-30
-    - 1985-06-30
-    - 1987-12-31
-    - 1989-12-31
-    - 1990-12-31
-    - 1992-06-30
-    - 1993-06-30
-    - 1994-06-30
-    - 1995-12-31
-    - 1997-06-30
-    - 1998-12-31
-    - 2005-12-31
-    - 2008-12-31
-    - 2012-06-30
-    - 2015-06-30
-    - 2016-12-31

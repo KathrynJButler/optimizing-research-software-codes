@@ -1,4 +1,5 @@
 import datetime
+from email import header
 from email.mime import base
 import multiprocessing
 import os
@@ -37,6 +38,12 @@ logging.basicConfig(
     datefmt="%H:%M:%S"
 )
 
+# Logging color codes
+GREEN = '\033[92m'
+YELLOW = "\033[93m"
+RED = '\033[91m'
+RESET = '\033[0m'
+
 # time tracking
 import time
 start = time.time()
@@ -55,9 +62,18 @@ _OUTPUT_COLUMNS = [
 
 class Rinex(object):
   """
-  Rinex Class for parsing Rinex files and calculating satellite positions, azimuth, and elevation"""
+  Rinex Class for parsing Rinex files and calculating satellite positions, azimuth, and elevation
+  """
   _leap_months = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366]
   _normal_months = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365]
+  _leap_seconds = [
+    datetime.date(1981, 6, 30), datetime.date(1982, 6, 30), datetime.date(1983, 6, 30),
+    datetime.date(1985, 6, 30), datetime.date(1987, 12, 31), datetime.date(1989, 12, 31),
+    datetime.date(1990, 12, 31), datetime.date(1992, 6, 30), datetime.date(1993, 6, 30),
+    datetime.date(1994, 6, 30), datetime.date(1995, 12, 31), datetime.date(1997, 6, 30),
+    datetime.date(1998, 12, 31), datetime.date(2005, 12, 31), datetime.date(2008, 12, 31),
+    datetime.date(2012, 6, 30), datetime.date(2015, 6, 30), datetime.date(2016, 12, 31)
+]
   _sec_per_day = 86400
   _sec_per_week = 604800
   _sec_half_week = 302400
@@ -109,7 +125,24 @@ class Rinex(object):
     self.hour_minute_index = hour_minute_index
 
     self.config = config.load_config()  # Load configuration
-    self.config['etc']['leap_second'] = sorted(self.config['etc']['leap_second'])  # Sort leap_second value
+
+    header = gr.rinexheader(self.obs_files[0])
+    pos_str = header.get('APPROX POSITION XYZ', None)
+    if pos_str is not None:
+        self.station_info = [float(x) for x in pos_str.split()]
+    else:
+        # Fall back to config if header doesn't have it
+        self.station_info = self.config['station']['info']
+        if self.station_info == [None, None, None]:
+          logging.error(f'{RED}Station position not found in header or config! {RESET}')
+          logging.info('Elevation and azimuth calculations will be inaccurate until station position is provided.')
+          logging.info('Please update the position in the config file or make sure the Rinex header contains APPROX POSITION XYZ.')
+          logging.info('Closing the program...')
+          # close the whole program
+          exit(1)
+            
+        logging.warning(f'{YELLOW}APPROX POSITION XYZ not found in observation header. {RESET}Using station position from config file...')
+        logging.info('Make sure the config file is up to date or the Rinex observation header has an accurate APPROX POSITION XYZ.')
 
     tmp = []
     for nav in self.nav_files:
@@ -186,11 +219,6 @@ class Rinex(object):
     Parse observation and navigation file and calculate position, azimuth, and elevation
     """
 
-    # Filter
-    #self.obs = self.obs[
-    #  (self.obs.C1.notna()) | (self.obs.C2.notna()) | (self.obs.C5.notna()) | (self.obs.C7.notna()) | (
-    #    self.obs.C8.notna())]
-
     sv_index = self.obs.index.get_level_values('sv')
     mask = sv_index.str.startswith(tuple(self.constellations))
     self.obs = self.obs[mask]
@@ -216,9 +244,6 @@ class Rinex(object):
     # filter out empty x, y, z
     self.obs = self.obs[(self.obs.PosX.notna()) & (self.obs.PosY.notna()) & (self.obs.PosY.notna())]
 
-    # sort by time,satid and save to csv
-    #self.obs.sort_values(['time', 'sv'])[['MJS', 'PosX', 'PosY', 'PosZ']].to_csv(os.path.join('data', 'compactdb.csv'))
-
     # write parsed data to csv
     station_id = self.obs_basename[:4] # first 4 letters of obs filename (e.g. NOME from NOME1190.25O)
     base = self.output_dir if self.output_dir is not None else self.config['rinex']['output_dir']
@@ -227,7 +252,7 @@ class Rinex(object):
 
     self.obs = self.obs.sort_values(['time', 'sv'])
 
-    recv = np.array(self.config['station']['info'])
+    recv = np.array(self.station_info)
 
     # batch elevation/azimuth for all rows at once
     sat_positions = self.obs[['PosX', 'PosY', 'PosZ']].dropna().values
@@ -824,15 +849,10 @@ class Rinex(object):
     if prn.startswith('C'):
       mjs += 14
     elif prn.startswith('R'):
-      mjs += self.get_leap_second(d)
+      for l in Rinex._leap_seconds:
+        if d.date() > l:
+          mjs += 1
     return mjs
-
-  def get_leap_second(self, d):
-    total_leap = 0
-    for l in self.config['etc']['leap_second']:
-      if d.date() > l:
-        total_leap += 1
-    return total_leap
   
   def add_mjd_column(self, df, apply_time_adjustments=True):
     # Detect which index level is PRN vs datetime
@@ -885,7 +905,7 @@ class Rinex(object):
           leap_seconds = []
           for d in dt_series[mask_r]:
               total = 0
-              for l in self.config['etc']['leap_second']:
+              for l in Rinex._leap_seconds:
                   if d.date() > l:
                       total += 1
               leap_seconds.append(total)
