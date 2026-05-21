@@ -7,7 +7,7 @@ rinex:
       - C:\Projects\optimizing-research-software-codes\Datasets\COVL_1sec\NOME1190_rnx2.25O
     navigation:
       - C:\Projects\optimizing-research-software-codes\Datasets\COVL_1sec\NOME1190.25P
-  output_dir: C:\Projects\optimizing-research-software-codes\gnss_python-main\output\ALIC\compactdb
+  output_dir: C:\Projects\optimizing-research-software-codes\gnss_python-main\output
   obs_size_threashold: 80
 constellations:
   - G

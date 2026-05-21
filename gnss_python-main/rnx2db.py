@@ -220,8 +220,9 @@ class Rinex(object):
     #self.obs.sort_values(['time', 'sv'])[['MJS', 'PosX', 'PosY', 'PosZ']].to_csv(os.path.join('data', 'compactdb.csv'))
 
     # write parsed data to csv
+    station_id = self.obs_basename[:4] # first 4 letters of obs filename (e.g. NOME from NOME1190.25O)
     base = self.output_dir if self.output_dir is not None else self.config['rinex']['output_dir']
-    output_file = os.path.join(base, self.config['station']['id'], 'compactdb', self.obs_basename + '.csv')
+    output_file = os.path.join(base, station_id, self.obs_basename + '.csv')
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     self.obs = self.obs.sort_values(['time', 'sv'])
