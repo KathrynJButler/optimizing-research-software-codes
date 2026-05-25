@@ -160,7 +160,7 @@ class Rinex(object):
 
   def _preprocess_obs(self, obs):
     file_stat = os.stat(obs)
-    if self.config['rinex'].get('obs_size_threashold', 64) < (file_stat.st_size / 1024 / 1024):
+    if self.config['rinex'].get('obs_size_threshold', 64) < (file_stat.st_size / 1024 / 1024):
       if self._get_obs_version(obs) == 3:
         logging.info('Large obs version 3 file detected!')
         self._obs_to_version_2(obs)

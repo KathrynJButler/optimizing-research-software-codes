@@ -1,16 +1,16 @@
 station:
-  # if the station position isn't found in the header, manually input it here
+  # if the station position can't be found in the obs header, manually input it here
   info: [NULL, NULL, NULL]
 rinex:
-  multiday: # options for multiday process
-    enabled: false # if true, it will read obs_location directory and try to process all data
   singlefile:
     observation:
       - .\observation\NOME1190_rnx2.25O
     navigation:
       - .\navigation\NOME1190.25P
   output_dir: .\output
-  obs_size_threashold: 80
+  multiday: # options for multiday process
+    enabled: false # if true, it will read obs_location directory and try to process all data
+  obs_size_threshold: 80
 constellations:
   - G
   - R
