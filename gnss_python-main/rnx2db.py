@@ -1,6 +1,4 @@
 import datetime
-from email import header
-from email.mime import base
 import multiprocessing
 import os
 import re
@@ -280,8 +278,8 @@ class Rinex(object):
 
     output_df = pd.DataFrame(rows, columns=_OUTPUT_COLUMNS)
 
-    logging.info(f'Saving to CSV (will take a few moments)...')
-    output_df.to_csv(output_file, index=False)
+    logging.info(f'{GREEN}Positions calculated and built successfully!{RESET} Saving to CSV (will take a few moments)...')
+    output_df.to_csv(output_file, index=False, na_rep='nan')
     logging.info(f'Output saved to {output_file}.')
 
     return output_df
@@ -294,7 +292,7 @@ class Rinex(object):
 
       if num_procs == 0:
         num_procs = multiprocessing.cpu_count() // 2
-      logging.info(f'Calculating positions using {num_procs} cores...')
+      logging.info(f'{GREEN}Files processed!{RESET} Calculating positions using {num_procs} cores...')
       chunks = num_procs * 4
       obs_partition = np.array_split(self.obs, chunks)
       
@@ -981,9 +979,9 @@ def main():
   rx = Rinex.load_config()
   if rx is not None:
     # output that the processing has started
-    logging.info("Processing RINEX files...")
+    logging.info(f"{GREEN}Config loaded successfully!{RESET} Processing RINEX files...")
     rx.parse()
-  logging.info("Processing completed.")
+  logging.info(f"{GREEN}Processing completed!{RESET}")
   end = time.time()
   logging.info(f"Total runtime: {end - start:.2f} seconds ({((end-start)/60):.0f} minutes).")
   logging.info("===================================")
