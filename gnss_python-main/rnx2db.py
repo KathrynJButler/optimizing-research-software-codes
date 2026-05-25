@@ -7,9 +7,6 @@ import re
 import sys
 import math
 
-# enable memory mapping
-#import mmap
-
 from typing import List
 
 import compute
