@@ -12,7 +12,6 @@ Specifically, the inherited RINEX2DB Python program converts RINEX observation a
 |------|------|----------|
 | [Dr. Jihye Park](https://engineering.oregonstate.edu/people/jihye-park) | Project Partner | Jihye.Park@oregonstate.edu |
 | Kathryn Butler | Team Member | butlekat@oregonstate.edu |
-| Michael McAllister | Team Member | mcallmic@oregonstate.edu |
 | Joseph Schaab | Team Member | schaabj@oregonstate.edu |
 | Birat Thapa | TA | thapabi@oregonstate.edu |
 
