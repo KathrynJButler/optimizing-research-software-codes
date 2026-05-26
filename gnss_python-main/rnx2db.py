@@ -179,7 +179,7 @@ class Rinex(object):
     executable = os.path.join('C:/Projects/optimizing-research-software-codes/gnss_python-main/gfzrnx', executable)
     if not os.path.exists(executable):
       raise FileNotFoundError(
-          f"GFZRNX executable not found at {executable}. "
+          f"{RED}GFZRNX executable not found at {executable}.{RESET} "
           "Check that gfzrnx is installed and the path is correct."
       )
     try:
@@ -258,7 +258,10 @@ class Rinex(object):
     self.obs.loc[self.obs[['PosX','PosY','PosZ']].dropna().index, 'AziAngle'] = el_az[:, 1]
 
     rows = []
-    for item in tqdm(self.obs.itertuples(), total=len(self.obs), desc="Building output rows"):
+    for item in tqdm(self.obs.itertuples(), total=len(self.obs), 
+                 desc="Building output rows",
+                 unit="row",
+                 bar_format="{desc}: {percentage:.0f}% |{bar}| {n_fmt}/{total_fmt} complete | Duration: {elapsed}s | ETA: {remaining}s "):
         res = self.get_additional_fields(item)
         if not res:
             continue
@@ -286,8 +289,6 @@ class Rinex(object):
 
   def calculate_positions(self):
     try:
-      if self.config['etc'].get('disable_parallel', False):
-        raise Exception('Throw exception to disable parallel')
       num_procs = self.config['etc'].get('num_cores', 0)
 
       if num_procs == 0:
@@ -302,7 +303,7 @@ class Rinex(object):
                 pool.imap(self.get_satellite_position_process_worker, obs_partition),
                 total=len(obs_partition),
                 desc="Calculating satellite positions",
-                unit="partition"
+                bar_format="{desc}: {percentage:.0f}% |{bar}| {n_fmt}/{total_fmt} complete | Duration: {elapsed}s | ETA: {remaining}s "
             )
         )
 
@@ -311,7 +312,7 @@ class Rinex(object):
     except:
       import traceback
       traceback.print_exc()
-      print('Unable to process parallel. Use single core instead')
+      print(f'{YELLOW}Unable to process parallel.{RESET} Using single core instead.')
       self.obs[['PosX', 'PosY', 'PosZ', 'ClkCorr']] = self.obs.apply(lambda x: self.get_satellite_position(x), axis=1, result_type='expand')
 
   def get_satellite_position_process_worker(self, sat_list):
@@ -435,12 +436,6 @@ class Rinex(object):
       if not np.isnan(getattr(sat, p, np.nan)):
         return True
     return False
-
-  def get_first_field(self, sat, prop):
-    for p in prop:
-      if not np.isnan(getattr(sat, p, np.nan)):
-        return getattr(sat, p)
-    return 'None'
 
   def get_freq_band_rinex3(self, band, sat, prop):
     attrs = dir(sat)
@@ -956,26 +951,7 @@ class Rinex(object):
       csv_out += postfix
     return os.path.join(csv_out_dir, csv_out + '.csv')
 
-  @classmethod
-  def load_dir(cls, dir_path):
-    if not os.path.isdir(dir_path):
-      raise FileNotFoundError(f'{dir_path} not exists')
-    nav_file = ''
-    obs_file = ''
-    for l in os.listdir(dir_path):
-      joined_path = os.path.join(dir_path, l)
-      if os.path.isfile(joined_path):
-        if joined_path.lower().endswith('.rnx'):
-          nav_file = joined_path
-        elif joined_path.lower().endswith('o'):
-          obs_file = joined_path
-    return cls(nav_file, obs_file)
-
 def main():
-  logging.info("===================================")
-  logging.info("GNSS RINEX Processing Started")
-  logging.info("===================================")
-
   rx = Rinex.load_config()
   if rx is not None:
     # output that the processing has started
@@ -985,7 +961,9 @@ def main():
   end = time.time()
   logging.info(f"Total runtime: {end - start:.2f} seconds ({((end-start)/60):.0f} minutes).")
   logging.info("===================================")
-  # rx = Rinex.load_dir('data')
 
 if __name__ == '__main__':
+  logging.info("===================================")
+  logging.info("GNSS RINEX Processing Started")
+  logging.info("===================================")
   main()
