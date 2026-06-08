@@ -250,7 +250,7 @@ class Rinex(object):
     recv = np.array(self.station_info)
 
     # batch elevation/azimuth for all rows at once
-    sat_positions = self.obs[['PosX', 'PosY', 'PosZ']].dropna().values
+    sat_positions = self.obs[['PosX', 'PosY', 'PosZ']].dropna().values.reshape(-1, 3)
     el_az = compute.calculate_elevation_azimuth_batch(recv, sat_positions)
 
     # store back onto obs so the loop can just read it
@@ -740,8 +740,8 @@ class Rinex(object):
   def find_nearest_block(self, prn, t):
     try:
       nav = self.nav[self.nav.index.get_level_values('sv') == prn]
-      idx = (nav['MJS'] - t).abs().idxmin()
-      return nav.loc[idx]
+      idx = (nav['MJS'] - t).abs().argsort().iat[0]
+      return nav.iloc[idx]
     except:
       return None
 
