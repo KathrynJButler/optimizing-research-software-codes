@@ -123,7 +123,7 @@ class Rinex(object):
 
     header = gr.rinexheader(self.obs_files[0])
     pos_str = header.get('APPROX POSITION XYZ', None)
-    # if we can't find APPROX POSITION XYZ or if APPROX POSITION XYZ is 0, 0, 0
+    # if we can find APPROX POSITION XYZ and it's not 0, 0, 0
     if pos_str is not None and not all(float(x) == 0 for x in pos_str.split()):
         self.station_info = [float(x) for x in pos_str.split()]
     else:
