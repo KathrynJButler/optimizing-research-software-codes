@@ -2,7 +2,7 @@
 
 The Optimizing Research Software Codes project aims to improve the performance of an existing research tool used for Global Navigation Satellite System (GNSS) data analysis.  
 
-Specifically, the inherited RINEX2DB Python program converts RINEX observation and navigation files into `.csv` outputs. Our goal is to reduce computation time by 60% while maintaining accuracy.
+Specifically, the inherited RINEX2DB Python program converts RINEX observation and navigation files into `.csv` outputs. We have achieved about a 30% runtime reduction while maintaining 100% accuracy and improving the UI substantially.
 
 ---
 
@@ -11,8 +11,8 @@ Specifically, the inherited RINEX2DB Python program converts RINEX observation a
 | Name | Role | Contact |
 |------|------|----------|
 | [Dr. Jihye Park](https://engineering.oregonstate.edu/people/jihye-park) | Project Partner | Jihye.Park@oregonstate.edu |
-| Kathryn Butler | Team Member | butlekat@oregonstate.edu |
-| Joseph Schaab | Team Member | schaabj@oregonstate.edu |
+| Kathryn Butler | Project and Documentation Lead | butlekat@oregonstate.edu |
+| Joseph Schaab | Project Developer Lead | schaabj@oregonstate.edu |
 | Birat Thapa | TA | thapabi@oregonstate.edu |
 
 ---
@@ -21,10 +21,8 @@ Specifically, the inherited RINEX2DB Python program converts RINEX observation a
 
 | Directory | Description |
 |----------------|-------------|
-| `.github/workflows/` | Code analysis folder (currently disabled). |
-| `Datasets/COVL_1sec/` | Sample input datasets (observation and navigation files). |
-| `Testing/` | Testing functions and data go here (currently empty). |
-| `documetation/` | Architecture, contributing, and progress reports. |
+| `docs/` | Scripts for the website (not needed to download). |
+| `documetation/` | Architecture, contributing, and progress reports (not needed to download). |
 | `gnss_python-main/` | Main program folder containing `rnx2db.py` and supporting scripts. |
 
 ---
@@ -73,7 +71,7 @@ Place your files in the correct folders before running:
 - `navigation/` — navigation files (e.g. `NOME1190.25P`)
 
 > **VSCode users:** Open the project folder and select `rnx2db_env` as your interpreter (Ctrl+Shift+P → "Python: Select Interpreter").  
-> **Anaconda users:** See the Anaconda setup section at the bottom of this document.
+> **Anaconda users:** See the Anaconda setup section in How_to_Run.pdf in the documentation/ folder.
 
 ---
 
@@ -88,6 +86,7 @@ fc [original_output.csv] [optimized_output.csv]
 # macOS / Linux
 diff [original_output.csv] [optimized_output.csv]
 ```
+Alternatively, for large files, use [Beyond Compare 5](https://www.scootersoftware.com/download) to visualize the data and find out their differences easier.
 
 Our team has tested against multiple datasets of varying sizes to confirm that outputs are identical.
 
@@ -118,9 +117,9 @@ Edit `config.yaml` to point to your files:
 rinex:
   singlefile:
     observation:
-      - .\observation\[YOURFILE].25O
+      - .\observation\[YOURFILE]
     navigation:
-      - .\navigation\[YOURFILE].25P
+      - .\navigation\[YOURFILE]
   output_dir: .\output
 ```
 
@@ -153,7 +152,7 @@ This project runs locally and does not require a server deployment. To transfer 
 | `APPROX POSITION XYZ not found` warning | Position missing from obs file header | Enter coordinates manually in `config.yaml` under `station.info` |
 | Output goes to wrong folder | Old output path in config | Update `output_dir` in `config.yaml` to `.\output` or your desired folder |
 | `Permission denied` on gfzrnx (macOS/Linux) | Executable bit not set | Run `chmod +x gfzrnx/gfzrnx_*` in the project folder |
-| Large file conversion is slow | Version 3 RINEX file being downgraded | Expected. This is a one-time step. Grab a coffee! |
+| Large file conversion is slow | Version 3 RINEX file being downgraded | Expected. This is a one-time step. Grab a coffee while you wait! |
 | Warning log fills with messages | Normal operation | Warnings are routed to `warning_log.txt` to keep the console clean |
 
 ---
