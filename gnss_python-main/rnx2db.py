@@ -752,9 +752,15 @@ class Rinex(object):
 
     return pos_x, pos_y, pos_z, clkcorr
 
-  def find_nearest_block(self, prn, t):
+  def find_nearest_block(self, prn, t, nav_by_prn=None):
     try:
-      nav = self.nav[self.nav.index.get_level_values('sv') == prn]
+      # Use pre-grouped dict for O(1) PRN lookup
+      if nav_by_prn is not None:
+          nav = nav_by_prn.get(prn)
+          if nav is None:
+              return None
+      else:
+          nav = self.nav[self.nav.index.get_level_values('sv') == prn]
       idx = (nav['MJS'] - t).abs().argsort().iat[0]
       return nav.iloc[idx]
     except:
