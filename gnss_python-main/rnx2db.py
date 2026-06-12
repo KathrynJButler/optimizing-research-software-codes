@@ -328,8 +328,10 @@ class Rinex(object):
       print(f'{YELLOW}Unable to process parallel.{RESET} Using single core instead.')
       self.obs[['PosX', 'PosY', 'PosZ', 'ClkCorr']] = self.obs.apply(lambda x: self.get_satellite_position(x), axis=1, result_type='expand')
 
-  def get_satellite_position_process_worker(self, sat_list):
-    sat_list[['PosX', 'PosY', 'PosZ', 'ClkCorr']] = sat_list.apply(lambda x: self.get_satellite_position(x), axis=1, result_type='expand')
+  def get_satellite_position_process_worker(self, sat_list, nav_by_prn):
+    sat_list[['PosX', 'PosY', 'PosZ', 'ClkCorr']] = sat_list.apply(
+        lambda x: self.get_satellite_position(x, nav_by_prn), axis=1, result_type='expand'
+    ) 
     return sat_list
 
   def get_additional_fields(self, sat) -> list:
