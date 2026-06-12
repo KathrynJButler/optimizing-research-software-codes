@@ -645,14 +645,14 @@ class Rinex(object):
 
     return p_dot
 
-  def get_satellite_position_std(self, prn, t, observation):
+  def get_satellite_position_std(self, prn, t, observation, nav_by_prn=None):
     omgedo = 7292115.1467e-11
     c = 299792458
     gm = 398.6005e12
     epsec = 1e-12
     maxit = 10
 
-    blk = self.find_nearest_block(prn, t)
+    blk = self.find_nearest_block(prn, t, nav_by_prn)
     if blk is None:
       return None, None, None, None
 
