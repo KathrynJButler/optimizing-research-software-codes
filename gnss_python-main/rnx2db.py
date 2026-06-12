@@ -301,14 +301,19 @@ class Rinex(object):
             prn: group
             for prn, group in self.nav.groupby(self.nav.index.get_level_values('sv'))
       }
-        
-      chunks = num_procs * 4
+
+      # Cap chunk count to the number of non-empty rows
+      chunks = min(num_procs * 4, len(self.obs))
       obs_partition = np.array_split(self.obs, chunks)
+
+      # Pass nav_by_prn alongside each chunk as a tuple so workers receive it
+      # without re-filtering nav. starmap unpacks the tuple for us.
+      worker_args = [(chunk, nav_by_prn) for chunk in obs_partition]
       
       with multiprocessing.Pool(processes=num_procs) as pool:
         results = list(
             tqdm(
-                pool.imap(self.get_satellite_position_process_worker, obs_partition),
+                pool.starmap(self.get_satellite_position_process_worker, worker_args),
                 total=len(obs_partition),
                 desc="Calculating satellite positions",
                 bar_format="{desc}: {percentage:.0f}% |{bar}| {n_fmt}/{total_fmt} complete | Duration: {elapsed}s | ETA: {remaining}s "
