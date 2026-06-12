@@ -295,6 +295,13 @@ class Rinex(object):
       if num_procs == 0:
         num_procs = multiprocessing.cpu_count() // 2
       logging.info(f'{GREEN}Files processed!{RESET} Calculating positions using {num_procs} cores...')
+
+      # nav_by_prn is O(1) compared to the previous find_nearest_block(), which is O(N)
+      nav_by_prn = {
+            prn: group
+            for prn, group in self.nav.groupby(self.nav.index.get_level_values('sv'))
+      }
+        
       chunks = num_procs * 4
       obs_partition = np.array_split(self.obs, chunks)
       
