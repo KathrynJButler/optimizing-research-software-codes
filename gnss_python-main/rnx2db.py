@@ -532,7 +532,7 @@ class Rinex(object):
     except:
       return None, None, None, None
 
-  def get_satellite_position_glonass(self, prn, t, observation, nav_by_prn):
+  def get_satellite_position_glonass(self, prn, t, observation, nav_by_prn=None):
     j2 = -1.0826257e-3
     omegae_dot = 7.292115e-5
     gm = 3.986004418e14
