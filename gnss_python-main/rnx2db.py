@@ -515,7 +515,7 @@ class Rinex(object):
     else:
       return -1
 
-  def get_satellite_position(self, sat):
+  def get_satellite_position(self, sat, nav_by_prn=None):
     try:
       if isinstance(sat.name[0], str):
         prn = sat.name[0]
@@ -526,9 +526,9 @@ class Rinex(object):
         obs_codes.remove(-1)
       observation_mean = sum(obs_codes) / len(obs_codes)
       if prn.startswith('R'):
-        return self.get_satellite_position_glonass(prn, sat.MJS, observation_mean)
+        return self.get_satellite_position_glonass(prn, sat.MJS, observation_mean, nav_by_prn)
       else:
-        return self.get_satellite_position_std(prn, sat.MJS, observation_mean)
+        return self.get_satellite_position_std(prn, sat.MJS, observation_mean, nav_by_prn)
     except:
       return None, None, None, None
 
