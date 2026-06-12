@@ -532,14 +532,14 @@ class Rinex(object):
     except:
       return None, None, None, None
 
-  def get_satellite_position_glonass(self, prn, t, observation):
+  def get_satellite_position_glonass(self, prn, t, observation, nav_by_prn):
     j2 = -1.0826257e-3
     omegae_dot = 7.292115e-5
     gm = 3.986004418e14
 
     ell_a = 6378136
 
-    blk = self.find_nearest_block(prn, t)
+    blk = self.find_nearest_block(prn, t, nav_by_prn)
     if blk is None:
       return None, None, None, None
 
