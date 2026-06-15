@@ -10,6 +10,11 @@ from typing import List
 import compute
 import config
 
+# disabling logging and progress bar toggles
+_cfg = config.load_config()
+DISABLE_LOGGING = _cfg['etc'].get('disable_logging', False)
+DISABLE_PROGRESS = _cfg['etc'].get('disable_progress_bar', False)
+
 import yaml
 import numpy as np
 import pandas as pd
@@ -136,9 +141,9 @@ class Rinex(object):
           logging.info('Closing the program...')
           # close the whole program
           exit(1)
-            
-        logging.warning(f'{YELLOW}APPROX POSITION XYZ not found in observation header. {RESET}Using station position from config file...')
-        logging.info('Make sure the config file is up to date or the Rinex observation header has an accurate APPROX POSITION XYZ.')
+        if not DISABLE_LOGGING:  
+          logging.warning(f'{YELLOW}APPROX POSITION XYZ not found in observation header. {RESET}Using station position from config file...')
+          logging.info('Make sure the config file is up to date or the Rinex observation header has an accurate APPROX POSITION XYZ.')
 
     tmp = []
     for nav in self.nav_files:
@@ -154,14 +159,16 @@ class Rinex(object):
     try:
       return gr.load(nav).to_dataframe()
     except:
-      logging.info('Large nav version 3 file detected!')
+      if not DISABLE_LOGGING:
+        logging.info('Large nav version 3 file detected!')
       return self._nav_to_version_2(nav)
 
   def _preprocess_obs(self, obs):
     file_stat = os.stat(obs)
     if self.config['rinex'].get('obs_size_threshold', 64) < (file_stat.st_size / 1024 / 1024):
       if self._get_obs_version(obs) == 3:
-        logging.info('Large obs version 3 file detected!')
+        if not DISABLE_LOGGING:
+          logging.info('Large obs version 3 file detected!')
         self._obs_to_version_2(obs)
 
   def _get_obs_version(self, obs):
@@ -171,7 +178,8 @@ class Rinex(object):
       return int(version_string.split('.')[0]) # return major version
 
   def _obs_to_version_2(self, obs):
-    logging.info('Converting obs version down to 2...')
+    if not DISABLE_LOGGING:
+      logging.info('Converting obs version down to 2...')
     import subprocess
     executable = {
       'linux': 'gfzrnx_2.1.9_lx64',
@@ -190,7 +198,8 @@ class Rinex(object):
     subprocess.Popen([executable, '-finp', obs, '-fout', obs, '-f', '--version_out', '2', '-satsys', ''.join(self.constellations)]).wait()
 
   def _nav_to_version_2(self, nav):
-    logging.info('Converting nav version down to 2...')
+    if not DISABLE_LOGGING:
+      logging.info('Converting nav version down to 2...')
     import subprocess
     executable = {
       'linux': 'gfzrnx_2.1.9_lx64',
@@ -259,32 +268,54 @@ class Rinex(object):
     self.obs.loc[self.obs[['PosX','PosY','PosZ']].dropna().index, 'AziAngle'] = el_az[:, 1]
 
     rows = []
-    for item in tqdm(self.obs.itertuples(), total=len(self.obs), 
-                 desc="Building output rows",
-                 unit="row",
-                 bar_format="{desc}: {percentage:.0f}% |{bar}| {n_fmt}/{total_fmt} complete | Duration: {elapsed}s | ETA: {remaining}s "):
+    if DISABLE_PROGRESS:
+      for item in self.obs.itertuples():
         res = self.get_additional_fields(item)
         if not res:
-            continue
+          continue
         
         if isinstance(item.Index[0], str):
-            sat_id, dt = item.Index[0], item.Index[1]
+          sat_id, dt = item.Index[0], item.Index[1]
         else:
-            sat_id, dt = item.Index[1], item.Index[0]
+          sat_id, dt = item.Index[1], item.Index[0]
 
         for r in res:
-            rows.append([
-                sat_id, dt, item.MJS, item.ClkCorr,
-                item.PosX, item.PosY, item.PosZ,
-                item.AziAngle, item.ElevAngle,
-                r[0], r[1], r[2], r[3], r[4], r[5]
-            ])
+          rows.append([
+            sat_id, dt, item.MJS, item.ClkCorr,
+            item.PosX, item.PosY, item.PosZ,
+            item.AziAngle, item.ElevAngle,
+            r[0], r[1], r[2], r[3], r[4], r[5]
+          ])
+      
+    else:
+      for item in tqdm(self.obs.itertuples(), total=len(self.obs), 
+                  desc="Building output rows",
+                  unit="row",
+                  bar_format="{desc}: {percentage:.0f}% |{bar}| {n_fmt}/{total_fmt} complete | Duration: {elapsed}s | ETA: {remaining}s "):
+        res = self.get_additional_fields(item)
+        if not res:
+          continue
+        
+        if isinstance(item.Index[0], str):
+          sat_id, dt = item.Index[0], item.Index[1]
+        else:
+          sat_id, dt = item.Index[1], item.Index[0]
+
+        for r in res:
+          rows.append([
+            sat_id, dt, item.MJS, item.ClkCorr,
+            item.PosX, item.PosY, item.PosZ,
+            item.AziAngle, item.ElevAngle,
+            r[0], r[1], r[2], r[3], r[4], r[5]
+          ])
 
     output_df = pd.DataFrame(rows, columns=_OUTPUT_COLUMNS)
 
-    logging.info(f'{GREEN}Positions calculated and built successfully!{RESET} Saving to CSV (will take a few moments)...')
+    if not DISABLE_LOGGING:
+      logging.info(f'{GREEN}Positions calculated and built successfully!{RESET} Saving to CSV (will take a few moments)...')
     output_df.to_csv(output_file, index=False, na_rep='nan')
-    logging.info(f'Output saved to {output_file}.')
+    if not DISABLE_LOGGING:
+      logging.info(f'Output saved to {output_file}.')
 
     return output_df
 
@@ -294,26 +325,31 @@ class Rinex(object):
 
       if num_procs == 0:
         num_procs = multiprocessing.cpu_count() // 2
-      logging.info(f'{GREEN}Files processed!{RESET} Calculating positions using {num_procs} cores...')
+      if not DISABLE_LOGGING:
+        logging.info(f'{GREEN}Files processed!{RESET} Calculating positions using {num_procs} cores...')
       chunks = num_procs * 4
       obs_partition = np.array_split(self.obs, chunks)
       
       with multiprocessing.Pool(processes=num_procs) as pool:
-        results = list(
+        if DISABLE_PROGRESS:
+          results = list(pool.imap(self.get_satellite_position_process_worker, obs_partition))
+        else: 
+          results = list(
             tqdm(
-                pool.imap(self.get_satellite_position_process_worker, obs_partition),
-                total=len(obs_partition),
-                desc="Calculating satellite positions",
-                bar_format="{desc}: {percentage:.0f}% |{bar}| {n_fmt}/{total_fmt} complete | Duration: {elapsed}s | ETA: {remaining}s "
+              pool.imap(self.get_satellite_position_process_worker, obs_partition),
+              total=len(obs_partition),
+              desc="Calculating satellite positions",
+              bar_format="{desc}: {percentage:.0f}% |{bar}| {n_fmt}/{total_fmt} complete | Duration: {elapsed}s | ETA: {remaining}s "
             )
-        )
+          )
 
       self.obs = pd.concat(results)
 
     except:
       import traceback
       traceback.print_exc()
-      print(f'{YELLOW}Unable to process parallel.{RESET} Using single core instead.')
+      if not DISABLE_LOGGING:
+        print(f'{YELLOW}Unable to process parallel.{RESET} Using single core instead.')
       self.obs[['PosX', 'PosY', 'PosZ', 'ClkCorr']] = self.obs.apply(lambda x: self.get_satellite_position(x), axis=1, result_type='expand')
 
   def get_satellite_position_process_worker(self, sat_list):
@@ -821,7 +857,8 @@ class Rinex(object):
   @classmethod
   def load_config(cls, config='config.yaml'):
     # output that we're loading config
-    logging.info("Loading config...")
+    if not DISABLE_LOGGING:
+      logging.info("Loading config...")
 
     if config is None:
       config = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.yaml')
@@ -831,7 +868,8 @@ class Rinex(object):
     with open(config, 'r') as fp:
       rinex_config = yaml.load(fp.read(), Loader=yaml.FullLoader)
     if rinex_config['rinex']['multiday']['enabled']:
-      print('Multiday processing requested.')
+      if not DISABLE_LOGGING:
+        print('Multiday processing requested.')
       obs_files = os.listdir(rinex_config['rinex']['multiday']['obs_location'])
       nav_files = os.listdir(rinex_config['rinex']['multiday']['nav_location'])
       obs_format = re.compile(rinex_config['rinex']['multiday']['obs_format'].replace('.', '\\.').replace('{DOY}', '(?P<DOY>[0-9]{3})').replace('{YY}', '(?P<YY>[0-9]{2})'))
@@ -840,7 +878,8 @@ class Rinex(object):
       for obs in obs_files:
         m = obs_format.search(obs)
         if m is not None:
-          print('Processing...', obs)
+          if not DISABLE_LOGGING:
+            logging.info('Processing...', obs)
           obs_search = m.groupdict()
           doy = obs_search['DOY']
           year = int(obs_search['YY']) + 2000
@@ -956,15 +995,18 @@ def main():
   rx = Rinex.load_config()
   if rx is not None:
     # output that the processing has started
-    logging.info(f"{GREEN}Config loaded successfully!{RESET} Processing RINEX files...")
+    if not DISABLE_LOGGING:
+      logging.info(f"{GREEN}Config loaded successfully!{RESET} Processing RINEX files...")
     rx.parse()
-  logging.info(f"{GREEN}Processing completed!{RESET}")
-  end = time.time()
-  logging.info(f"Total runtime: {end - start:.2f} seconds ({((end-start)/60):.0f} minutes).")
-  logging.info("===================================")
+  if not DISABLE_LOGGING:
+    logging.info(f"{GREEN}Processing completed!{RESET}")
+    end = time.time()
+    logging.info(f"Total runtime: {end - start:.2f} seconds ({((end-start)/60):.0f} minutes).")
+    logging.info("===================================")
 
 if __name__ == '__main__':
-  logging.info("===================================")
-  logging.info("GNSS RINEX Processing Started")
-  logging.info("===================================")
+  if not DISABLE_LOGGING:
+    logging.info("===================================")
+    logging.info("GNSS RINEX Processing Started")
+    logging.info("===================================")
   main()

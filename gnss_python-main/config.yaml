@@ -17,4 +17,6 @@ constellations:
   - E
   - C
 etc:
+  disable_progress_bar: false
+  disable_logging: false
   disable_parallel: false
